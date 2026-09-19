@@ -9,7 +9,11 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 8080;
 const CONFIG_PATH = path.join(__dirname, 'config', 'status.json');
-const WORKSPACE_DIR = path.resolve(__dirname, '..', 'portofolio_diyul');
+const WORKSPACE_DIR = process.env.WORKSPACE_DIR || (
+  fs.existsSync(path.resolve(__dirname, '..', 'prototype_porto'))
+    ? path.resolve(__dirname, '..', 'prototype_porto')
+    : path.resolve(__dirname, '..', 'portofolio_diyul')
+);
 
 // Active build processes & SSE listeners
 let activeBuild = null;
