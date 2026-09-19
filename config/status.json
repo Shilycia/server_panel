@@ -1,0 +1,27 @@
+{
+  "maintenance": true,
+  "published": false,
+  "targetWeb": "http://127.0.0.1:3000",
+  "targetApi": "http://127.0.0.1:3001",
+  "remoteHost": "http://43.173.33.116",
+  "bypassKey": "saba_bypass_secret",
+  "lastBuild": {
+    "target": "portfolio-web",
+    "timestamp": "2026-09-19T20:29:49.618Z",
+    "success": true,
+    "durationMs": 15868,
+    "exitCode": 0
+  },
+  "history": [
+    {
+      "action": "TOGGLE_MAINTENANCE",
+      "value": false,
+      "timestamp": "2026-09-19T20:28:57.430Z"
+    },
+    {
+      "action": "TOGGLE_MAINTENANCE",
+      "value": true,
+      "timestamp": "2026-09-19T20:29:07.898Z"
+    }
+  ]
+}

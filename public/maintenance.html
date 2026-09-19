@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Website Sedang Maintenance • Sameko Saba & Kaniki Engineering</title>
+  <meta name="description" content="Portal web sedang dalam pemeliharaan berkala bersama Sameko Saba & Kaniki Engineering." />
+
+  <!-- Fonts & Google Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN for instant styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              cyan: '#06b6d4',
+              sky: '#38bdf8',
+              navy: '#030712',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Material Symbols setup */
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined', sans-serif;
+      font-weight: normal;
+      font-style: normal;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hide OS cursor when custom Saba cursor is active */
+    @media (pointer: fine) {
+      body.saba-cursor-active,
+      body.saba-cursor-active * {
+        cursor: none !important;
+      }
+    }
+
+    /* Wave and Water Keyframes */
+    @keyframes waveEbb {
+      0%, 100% {
+        transform: translateY(0px) scaleY(1);
+        opacity: 0.85;
+      }
+      50% {
+        transform: translateY(-24px) scaleY(1.04);
+        opacity: 1;
+      }
+    }
+
+    @keyframes waveSecondary {
+      0%, 100% {
+        transform: translateY(0px) scaleY(0.98);
+        opacity: 0.55;
+      }
+      50% {
+        transform: translateY(-34px) scaleY(1.06);
+        opacity: 0.8;
+      }
+    }
+
+    @keyframes foamPulse {
+      0%, 100% {
+        stroke-width: 4px;
+        opacity: 0.7;
+      }
+      50% {
+        stroke-width: 7px;
+        opacity: 1;
+      }
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(3deg); }
+    }
+
+    @keyframes crabScuttle {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      25% { transform: translateY(-4px) rotate(-6deg); }
+      75% { transform: translateY(-2px) rotate(6deg); }
+    }
+
+    @keyframes waterGlimmer {
+      0%, 100% { opacity: 0.25; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bubbleFloatUp {
+      0% {
+        transform: translateY(0) scale(0.6);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.65;
+      }
+      80% {
+        opacity: 0.65;
+      }
+      100% {
+        transform: translateY(-120vh) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    .animate-wave-ebb {
+      animation: waveEbb 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .animate-wave-secondary {
+      animation: waveSecondary 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .animate-foam-pulse {
+      animation: foamPulse 3.5s ease-in-out infinite;
+    }
+    .animate-float-slow {
+      animation: floatSlow 5s ease-in-out infinite;
+    }
+    .animate-crab-scuttle {
+      animation: crabScuttle 3s ease-in-out infinite;
+    }
+    .animate-water-glimmer {
+      animation: waterGlimmer 4s ease-in-out infinite;
+    }
+    .backdrop-blur-xs {
+      backdrop-filter: blur(2px);
+    }
+  </style>
+</head>
+<body class="relative min-h-screen w-full overflow-x-hidden bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
+
+  <!-- =========================================
+       CUSTOM SAMEKO SABA NAUTICAL CURSOR & TRAIL
+       ========================================= -->
+  <div id="cursorTrailContainer"></div>
+  <div id="rippleContainer"></div>
+
+  <div id="sabaCursor" class="fixed pointer-events-none z-[9999] opacity-0 transition-opacity duration-200" style="transform: translate3d(0, 0, 0); will-change: transform, left, top;">
+    <div id="cursorBody" class="relative -ml-2 -mt-2 transition-transform duration-200 ease-out">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-[0_2px_8px_rgba(6,182,212,0.85)]">
+        <path d="M3 3 L15 28 L19 18 L29 14 Z" fill="#ffffff" />
+        <path d="M5 6 L14 24 L17 16 L25 13 Z" fill="url(#cursorGrad)" />
+        <polygon points="14,12 18,12 16,8" fill="#fde047" stroke="#ca8a04" stroke-width="0.8" />
+        <circle cx="16" cy="14" r="1.8" fill="#ffffff" />
+        <defs>
+          <linearGradient id="cursorGrad" x1="5" y1="6" x2="25" y2="24" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8" />
+            <stop offset="50%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="#0284c7" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div id="cursorSparkle" class="absolute -top-3 -right-2 text-amber-300 select-none hidden animate-bounce">
+        <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================
+       ANIMATED BEACH BACKGROUND WITH PARALLAX
+       ========================================= -->
+  <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+    <!-- Layer 1: Base Beach Canvas -->
+    <div 
+      id="bgCanvas"
+      class="absolute -inset-10 bg-cover bg-bottom md:bg-center transition-transform duration-300 ease-out"
+      style="background-image: url('/saba-beach-bg.png'); transform: scale(1.08);"
+    ></div>
+
+    <!-- Ambient Darkening Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/35 to-slate-950/80 backdrop-blur-[0.5px]"></div>
+
+    <!-- Layer 2: Animated Shoreline Waves -->
+    <div id="waveLayer" class="absolute inset-x-0 bottom-0 top-0 pointer-events-none transition-transform duration-300 ease-out">
+      <!-- Primary Wave: Translucent Turquoise Water Tide + Glowing Foam Line -->
+      <div class="absolute inset-0 animate-wave-ebb">
+        <svg viewBox="0 0 1024 575" preserveAspectRatio="none" class="w-full h-full">
+          <defs>
+            <filter id="foamGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <path d="M 0,386 C 80,335 120,318 160,318 C 240,318 280,355 360,362 C 460,370 600,385 680,390 C 740,395 780,432 840,429 C 880,425 920,345 960,332 L 1024,328 L 1024,575 L 0,575 Z" fill="rgba(34, 211, 238, 0.22)" />
+          <path d="M 0,386 C 80,335 120,318 160,318 C 240,318 280,355 360,362 C 460,370 600,385 680,390 C 740,395 780,432 840,429 C 880,425 920,345 960,332 L 1024,328" fill="none" stroke="rgba(255, 255, 255, 0.95)" stroke-width="5" stroke-linecap="round" filter="url(#foamGlow)" class="animate-foam-pulse" />
+          <path d="M 0,388 C 80,337 120,320 160,320 C 240,320 280,357 360,364 C 460,372 600,387 680,392 C 740,397 780,434 840,431 C 880,427 920,347 960,334 L 1024,330" fill="none" stroke="rgba(56, 189, 248, 0.55)" stroke-width="10" stroke-linecap="round" opacity="0.6" />
+        </svg>
+      </div>
+
+      <!-- Secondary Wave (Delayed Phase) -->
+      <div class="absolute inset-0 animate-wave-secondary" style="animation-delay: -3.5s;">
+        <svg viewBox="0 0 1024 575" preserveAspectRatio="none" class="w-full h-full opacity-60">
+          <path d="M 0,394 C 90,345 130,328 170,328 C 250,328 290,365 370,372 C 470,380 610,395 690,400 C 750,405 790,442 850,439 C 890,435 930,355 970,342 L 1024,338 L 1024,575 L 0,575 Z" fill="rgba(20, 184, 166, 0.15)" />
+          <path d="M 0,394 C 90,345 130,328 170,328 C 250,328 290,365 370,372 C 470,380 610,395 690,400 C 750,405 790,442 850,439 C 890,435 930,355 970,342 L 1024,338" fill="none" stroke="rgba(255, 255, 255, 0.7)" stroke-width="3.5" stroke-linecap="round" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Water Caustic Shimmer -->
+    <div class="absolute bottom-0 inset-x-0 h-[45%] bg-gradient-to-t from-cyan-500/18 via-teal-400/10 to-transparent pointer-events-none animate-water-glimmer"></div>
+
+    <!-- Layer 3: Floating Stickers with Parallax -->
+    <div id="floatBoatLeft" class="absolute top-28 left-[6%] w-16 h-12 pointer-events-none animate-float-slow hidden md:block transition-transform duration-300 ease-out">
+      <img src="/stickers/saba-boat.png" alt="Origami Boat" class="w-full h-full object-contain drop-shadow-lg opacity-85" />
+    </div>
+    <div id="floatFishLeft" class="absolute bottom-28 left-[10%] w-14 h-10 pointer-events-none animate-float-slow hidden md:block transition-transform duration-300 ease-out" style="animation-delay: 2s;">
+      <img src="/stickers/saba-fish.png" alt="Blue Fish" class="w-full h-full object-contain drop-shadow-lg opacity-85" />
+    </div>
+    <div id="floatBoatRight" class="absolute top-36 right-[8%] w-16 h-12 pointer-events-none animate-float-slow hidden md:block transition-transform duration-300 ease-out" style="animation-delay: 1.5s;">
+      <img src="/stickers/saba-boat.png" alt="Origami Boat" class="w-full h-full object-contain drop-shadow-lg opacity-80" />
+    </div>
+    <div id="floatCrabRight" class="absolute bottom-24 right-[12%] w-16 h-11 pointer-events-none animate-crab-scuttle hidden md:block transition-transform duration-300 ease-out">
+      <img src="/stickers/saba-crab.png" alt="Kaniki Crab" class="w-full h-full object-contain drop-shadow-lg opacity-90" />
+    </div>
+
+    <!-- Rising Ocean Bubbles -->
+    <div id="oceanBubblesContainer"></div>
+  </div>
+
+  <!-- =========================================
+       TOP HEADER BAR
+       ========================================= -->
+  <header class="relative z-20 w-full max-w-6xl mx-auto px-6 pt-6 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-slate-900/80 backdrop-blur-md flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-300/30 p-1.5">
+        <img src="/stickers/saba-fish.png" alt="Sameko Saba Fish" class="w-full h-full object-contain" />
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-sm tracking-wider uppercase text-cyan-300 drop-shadow">
+            Sameko Saba • Beach Mode
+          </span>
+          <span class="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+        </div>
+        <p class="text-xs text-slate-300 font-mono drop-shadow">PORT 3000 • SYSTEM MAINTENANCE</p>
+      </div>
+    </div>
+
+    <!-- Live Status Pill & Admin Quick Access -->
+    <div class="flex items-center gap-2">
+      <div class="hidden sm:flex items-center gap-2 bg-slate-900/85 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-cyan-500/30 shadow-inner text-xs font-mono">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+        <span class="text-slate-300">Host:</span>
+        <span class="text-cyan-300 font-semibold">Helipod.io Cloud</span>
+      </div>
+      <a href="/admin" class="flex items-center gap-1.5 bg-cyan-950/80 hover:bg-cyan-900/90 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-full text-xs font-mono transition shadow-lg">
+        <span class="material-symbols-outlined text-sm">settings</span>
+        <span class="hidden sm:inline">Admin Panel</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- =========================================
+       MAIN MAINTENANCE STAGE
+       ========================================= -->
+  <main id="mainStage" class="relative z-20 max-w-4xl mx-auto px-6 py-6 flex flex-col items-center text-center my-auto transition-transform duration-300 ease-out">
+    
+    <!-- Official Sameko Saba Beach Logo -->
+    <div id="sabaLogoBox" class="mb-4 animate-float-slow select-none transition-transform duration-300 ease-out">
+      <img 
+        src="/stickers/saba-logo.png" 
+        alt="Sameko Saba Official Logo" 
+        class="w-44 sm:w-56 h-auto object-contain drop-shadow-[0_10px_25px_rgba(6,182,212,0.4)] mx-auto hover:scale-105 transition-transform duration-300" 
+      />
+    </div>
+
+    <!-- Saba & Kaniki Avatar Stage -->
+    <div class="relative mb-6">
+      <div id="avatarContainer" class="relative group cursor-pointer animate-float-slow" onclick="triggerCheer()">
+        <!-- Glow Aura -->
+        <div class="absolute -inset-3 bg-gradient-to-r from-cyan-500/30 via-sky-400/30 to-pink-500/30 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition duration-500"></div>
+        
+        <!-- Saba Animated GIF Frame -->
+        <div class="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full p-2 bg-gradient-to-tr from-cyan-400 via-sky-300 to-amber-200 shadow-2xl shadow-cyan-500/50 border-2 border-cyan-200/60 overflow-hidden bg-slate-950 flex items-center justify-center">
+          <img
+            src="/saba-maintenance.gif"
+            alt="Sameko Saba Maintenance"
+            class="w-full h-full object-cover rounded-full select-none pointer-events-none"
+          />
+        </div>
+
+        <!-- Click to Cheer Hint Badge with Google Icon -->
+        <div class="absolute -bottom-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-cyan-500/90 hover:bg-cyan-400 text-slate-950 font-extrabold text-[11px] px-3 py-0.5 rounded-full shadow-lg shadow-cyan-500/40 border border-cyan-200 transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[13px] text-slate-950" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+          <span>Klik Saba untuk Semangat!</span>
+        </div>
+      </div>
+
+      <!-- Kaniki Mascot (Hardhat Technician Crab) with Google Icon Tool -->
+      <div 
+        class="absolute -bottom-4 -right-6 sm:-right-10 flex flex-col items-center animate-crab-scuttle cursor-pointer"
+        onclick="triggerCheer()"
+        title="Kaniki: Engineering on duty!"
+      >
+        <div class="w-8 h-4 bg-yellow-400 rounded-t-full border border-yellow-600 shadow-md flex items-center justify-center -mb-1 z-10">
+          <span class="w-1.5 h-1.5 rounded-full bg-white shadow-xs"></span>
+        </div>
+        <div class="w-16 h-12 relative filter drop-shadow-md select-none flex items-center justify-center">
+          <img src="/stickers/saba-crab.png" alt="Kaniki Crab" class="w-full h-full object-contain" />
+          <span class="absolute -top-1 -right-2 w-5 h-5 bg-slate-900/90 rounded-full border border-amber-400/50 shadow flex items-center justify-center">
+            <span class="material-symbols-outlined text-[12px] text-amber-400" style="font-variation-settings: 'FILL' 1;">build</span>
+          </span>
+        </div>
+        <span class="text-[10px] font-mono font-bold text-amber-300 bg-slate-900/90 px-1.5 py-0.5 rounded border border-amber-400/40 shadow mt-0.5">
+          Kaniki
+        </span>
+      </div>
+    </div>
+
+    <!-- Dynamic Saba Dialogue Speech Bubble with Google Icon -->
+    <div 
+      onclick="nextDialogue()"
+      class="relative max-w-xl mx-auto mb-8 cursor-pointer group"
+      title="Klik untuk dialog berikutnya!"
+    >
+      <div class="relative bg-slate-900/85 backdrop-blur-xl border border-cyan-400/40 hover:border-cyan-300 px-6 py-4 rounded-2xl shadow-xl shadow-cyan-950/60 transition-all duration-300 group-hover:scale-[1.02]">
+        <div class="flex items-center gap-2 mb-1.5 justify-center">
+          <span class="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+            <img src="/stickers/saba-boat.png" alt="Origami Boat" class="w-5 h-4 object-contain inline-block" />
+            <span>Sameko Saba berkata:</span>
+          </span>
+          <span class="text-[10px] text-slate-400 font-mono">(Klik untuk ganti)</span>
+        </div>
+        <p id="dialogueText" class="text-base sm:text-lg font-medium text-slate-100 leading-relaxed transition-all flex items-center justify-center flex-wrap gap-2">
+          <!-- Populated by JavaScript -->
+        </p>
+      </div>
+      <div class="w-4 h-4 bg-slate-900/85 border-b border-r border-cyan-400/40 rotate-45 mx-auto -mt-2 shadow-md"></div>
+    </div>
+
+    <!-- Title & Under Maintenance Description -->
+    <div class="mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-cyan-300 text-xs font-mono mb-3">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        PEMELIHARAAN SISTEM BERKALA
+      </div>
+
+      <h1 class="text-3xl sm:text-5xl font-black tracking-tight mb-3 text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-sky-400 drop-shadow-sm">
+        Website Sedang Maintenance
+      </h1>
+      <p class="text-slate-300 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+        Portal web portofolio kreatif sedang dalam perbaikan dan optimasi performa bersama tim mercusuar <strong>Sameko Saba</strong> & <strong>Kaniki Engineering</strong>.
+      </p>
+    </div>
+
+    <!-- Interactive Cheer Button with Sound & Particles -->
+    <div class="relative mb-10">
+      <button
+        onclick="triggerCheer()"
+        class="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold text-sm sm:text-base shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border border-cyan-200/50"
+      >
+        <img src="/stickers/saba-crab.png" alt="Kaniki Crab" class="w-7 h-5 object-contain group-hover:rotate-12 transition-transform" />
+        <span>Kirim Semangat ke Saba & Kaniki!</span>
+        <span id="cheerBadge" class="bg-slate-950/25 px-2 py-0.5 rounded-full text-xs font-mono text-slate-900">
+          +42
+        </span>
+      </button>
+      <div id="particleContainer"></div>
+    </div>
+
+    <!-- Server Details Grid with Google Icons -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-xl text-left mb-8">
+      <div class="bg-slate-900/60 backdrop-blur-md p-3.5 rounded-xl border border-slate-800">
+        <div class="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px] text-cyan-400">dns</span>
+          <span>Infrastruktur Host</span>
+        </div>
+        <div class="text-xs font-semibold text-slate-200 mt-1">Helipod.io Cloud</div>
+        <div class="text-[10px] text-cyan-400 font-mono">Ubuntu 24.04 LTS</div>
+      </div>
+
+      <div class="bg-slate-900/60 backdrop-blur-md p-3.5 rounded-xl border border-slate-800">
+        <div class="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px] text-emerald-400">api</span>
+          <span>Core REST API</span>
+        </div>
+        <div class="text-xs font-semibold text-slate-200 mt-1">PORT 3001 • Active</div>
+        <a 
+          href="http://43.173.33.116:3001" 
+          target="_blank" 
+          rel="noreferrer"
+          class="text-[10px] text-cyan-400 hover:underline font-mono inline-flex items-center gap-1"
+        >
+          <span>Periksa Endpoint</span>
+          <span class="material-symbols-outlined text-[12px] text-cyan-400">arrow_forward</span>
+        </a>
+      </div>
+
+      <div class="bg-slate-900/60 backdrop-blur-md p-3.5 rounded-xl border border-slate-800">
+        <div class="text-[10px] uppercase font-mono text-slate-400 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[14px] text-pink-400">terminal</span>
+          <span>Pengembang Sistem</span>
+        </div>
+        <div class="text-xs font-semibold text-slate-200 mt-1">shilycia's DEV</div>
+        <div class="text-[10px] text-pink-400 font-mono">Bintang Putra Adryan</div>
+      </div>
+    </div>
+
+    <!-- Quick Links & Emergency Contact with Google Icons -->
+    <div class="flex items-center justify-center flex-wrap gap-4 text-xs font-semibold">
+      <a
+        href="https://wa.me/6282211516084"
+        target="_blank"
+        rel="noreferrer"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-cyan-500/40 transition"
+      >
+        <span class="material-symbols-outlined text-[16px] text-emerald-400">chat</span>
+        <span>WhatsApp Kontak Darurat</span>
+      </a>
+
+      <a
+        href="https://github.com/Shilycia"
+        target="_blank"
+        rel="noreferrer"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-cyan-500/40 transition"
+      >
+        <span class="material-symbols-outlined text-[16px] text-cyan-400">code</span>
+        <span>GitHub: @Shilycia</span>
+      </a>
+
+      <a
+        href="http://43.173.33.116"
+        target="_blank"
+        rel="noreferrer"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-cyan-500/40 transition"
+      >
+        <span class="material-symbols-outlined text-[16px] text-sky-400">home</span>
+        <span>Portal Utama (Port 80)</span>
+      </a>
+
+      <!-- Admin Bypass Link -->
+      <a
+        href="/?bypass=true"
+        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono text-slate-500 hover:text-slate-300 transition cursor-pointer"
+      >
+        <span class="material-symbols-outlined text-[14px] text-slate-400">lock_open</span>
+        <span>Admin Bypass Preview</span>
+      </a>
+    </div>
+
+  </main>
+
+  <!-- =========================================
+       FOOTER
+       ========================================= -->
+  <footer class="relative z-20 w-full max-w-6xl mx-auto px-6 py-6 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+    <div class="flex items-center gap-2">
+      <span>&copy; 2026 Diyul Creative Portfolio • Managed by shilycia's DEV</span>
+    </div>
+    <div class="flex items-center gap-3 font-mono text-[11px]">
+      <span class="inline-flex items-center gap-1.5">
+        Beach Keeper: Sameko Saba
+        <img src="/stickers/saba-fish.png" alt="Saba Fish" class="w-4 h-3 object-contain inline-block" />
+      </span>
+      <span>•</span>
+      <span class="inline-flex items-center gap-1.5">
+        Crab Mascot: Kaniki
+        <img src="/stickers/saba-crab.png" alt="Kaniki Crab" class="w-4.5 h-3.5 object-contain inline-block" />
+      </span>
+    </div>
+  </footer>
+
+  <!-- =========================================
+       SCRIPT: INTERACTIVITY, AUDIO & PARALLAX
+       ========================================= -->
+  <script>
+    // Dialogues with Google Icons
+    const DIALOGUES = [
+      {
+        text: "Awaawa~! Saba gak sengaja numpahin kopi ke kabel server... Kaniki lagi benerin!",
+        icon: "local_cafe",
+        iconColor: "text-amber-400"
+      },
+      {
+        text: "Kaniki Engineering lagi kencengin baut-baut Helipod Cloud! Dikit lagi ya~",
+        icon: "build",
+        iconColor: "text-cyan-400"
+      },
+      {
+        text: "Kalibrasi Mercusuar & Stasiun Pantai sedang berlangsung! Jangan sampai tersesat di ombak kabut~",
+        icon: "waves",
+        iconColor: "text-sky-400"
+      },
+      {
+        text: "Sambil nunggu server reboot, yuk kumpulin kerang laut bareng Saba!",
+        icon: "auto_awesome",
+        iconColor: "text-yellow-300"
+      },
+      {
+        text: "Tenang Kaniki bros! Kita bakal berenang online lagi secepatnya!",
+        icon: "water",
+        iconColor: "text-cyan-400"
+      }
+    ];
+
+    let dialogueIdx = 0;
+    let cheerCount = 42;
+
+    function renderDialogue() {
+      const item = DIALOGUES[dialogueIdx];
+      const el = document.getElementById("dialogueText");
+      if (!el) return;
+      el.innerHTML = `
+        <span>&ldquo;${item.text}&rdquo;</span>
+        <span class="material-symbols-outlined text-[20px] ${item.iconColor} drop-shadow inline-flex" style="font-variation-settings: 'FILL' 1;">
+          ${item.icon}
+        </span>
+      `;
+    }
+
+    function nextDialogue() {
+      dialogueIdx = (dialogueIdx + 1) % DIALOGUES.length;
+      renderDialogue();
+    }
+
+    // Auto rotate dialogue every 6s
+    setInterval(nextDialogue, 6000);
+    renderDialogue();
+
+    // Cute Web Audio API chime
+    function playCuteChime() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+          gain.gain.setValueAtTime(0.12, ctx.currentTime + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.08);
+          osc.stop(ctx.currentTime + i * 0.08 + 0.3);
+        });
+      } catch (e) {}
+    }
+
+    // Cheer Handler
+    function triggerCheer() {
+      playCuteChime();
+      cheerCount++;
+      const badge = document.getElementById("cheerBadge");
+      if (badge) badge.innerText = `+${cheerCount}`;
+
+      const stickers = [
+        "/stickers/saba-crab.png",
+        "/stickers/saba-fish.png",
+        "/stickers/saba-boat.png",
+      ];
+      const src = stickers[Math.floor(Math.random() * stickers.length)];
+      const xOffset = Math.random() * 80 - 40;
+
+      const container = document.getElementById("particleContainer");
+      if (!container) return;
+
+      const particle = document.createElement("div");
+      particle.className = "absolute left-1/2 -top-6 pointer-events-none transition-all duration-1000 ease-out";
+      particle.style.transform = `translateX(${xOffset}px) translateY(0px) scale(0.8)`;
+      particle.style.opacity = "1";
+      particle.innerHTML = `<img src="${src}" class="w-8 h-8 object-contain drop-shadow-lg" />`;
+
+      container.appendChild(particle);
+
+      requestAnimationFrame(() => {
+        particle.style.transform = `translateX(${xOffset * 1.5}px) translateY(-55px) scale(1.15)`;
+        particle.style.opacity = "0";
+      });
+
+      setTimeout(() => particle.remove(), 1200);
+    }
+
+    // =========================================
+    // CUSTOM SABA NAUTICAL CURSOR & PARALLAX LERP
+    // =========================================
+    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
+    if (isFinePointer) {
+      document.body.classList.add("saba-cursor-active");
+
+      const cursor = document.getElementById("sabaCursor");
+      const cursorBody = document.getElementById("cursorBody");
+      const cursorSparkle = document.getElementById("cursorSparkle");
+      const trailContainer = document.getElementById("cursorTrailContainer");
+      const rippleContainer = document.getElementById("rippleContainer");
+
+      // Parallax layers
+      const bgCanvas = document.getElementById("bgCanvas");
+      const waveLayer = document.getElementById("waveLayer");
+      const mainStage = document.getElementById("mainStage");
+      const sabaLogoBox = document.getElementById("sabaLogoBox");
+      const floatBoatLeft = document.getElementById("floatBoatLeft");
+      const floatFishLeft = document.getElementById("floatFishLeft");
+      const floatBoatRight = document.getElementById("floatBoatRight");
+      const floatCrabRight = document.getElementById("floatCrabRight");
+
+      let mouseX = -200, mouseY = -200;
+      let targetPx = 0, targetPy = 0;
+      let currPx = 0, currPy = 0;
+      let lastTrail = 0;
+
+      window.addEventListener("mousemove", (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursor.style.left = `${mouseX}px`;
+        cursor.style.top = `${mouseY}px`;
+        cursor.style.opacity = "1";
+
+        targetPx = (e.clientX / window.innerWidth - 0.5) * 2;
+        targetPy = (e.clientY / window.innerHeight - 0.5) * 2;
+
+        // Hover effect detection
+        const target = e.target;
+        const isHover = target && target.closest("a, button, [onclick], input, .group");
+        if (isHover) {
+          cursorBody.style.transform = "scale(1.35) rotate(12deg)";
+          cursorSparkle.classList.remove("hidden");
+        } else {
+          cursorBody.style.transform = "scale(1) rotate(0deg)";
+          cursorSparkle.classList.add("hidden");
+        }
+
+        // Water bubble trail
+        const now = performance.now();
+        if (now - lastTrail > 55) {
+          lastTrail = now;
+          const bubble = document.createElement("div");
+          const size = Math.random() * 8 + 5;
+          bubble.className = "fixed pointer-events-none rounded-full bg-cyan-200/40 border border-cyan-100/60 z-[9998] transition-all duration-500 ease-out";
+          bubble.style.left = `${e.clientX + (Math.random() * 10 - 5)}px`;
+          bubble.style.top = `${e.clientY + 10 + (Math.random() * 8 - 4)}px`;
+          bubble.style.width = `${size}px`;
+          bubble.style.height = `${size}px`;
+          bubble.style.transform = "translate(-50%, -50%) scale(0.7)";
+          bubble.style.opacity = "0.65";
+          bubble.style.boxShadow = "0 0 6px rgba(56, 189, 248, 0.4)";
+          trailContainer.appendChild(bubble);
+
+          requestAnimationFrame(() => {
+            bubble.style.transform = "translate(-50%, -80%) scale(1.2)";
+            bubble.style.opacity = "0";
+          });
+          setTimeout(() => bubble.remove(), 550);
+        }
+      });
+
+      window.addEventListener("mousedown", (e) => {
+        cursorBody.style.transform = "scale(0.85) rotate(-8deg)";
+
+        // Water Click Ripple
+        const ripple = document.createElement("div");
+        ripple.className = "fixed pointer-events-none rounded-full border-2 border-cyan-300/80 z-[9998] transition-all duration-700 ease-out";
+        ripple.style.left = `${e.clientX}px`;
+        ripple.style.top = `${e.clientY}px`;
+        ripple.style.width = "10px";
+        ripple.style.height = "10px";
+        ripple.style.marginLeft = "-5px";
+        ripple.style.marginTop = "-5px";
+        ripple.style.opacity = "0.9";
+        ripple.style.boxShadow = "0 0 20px rgba(56, 189, 248, 0.7)";
+        rippleContainer.appendChild(ripple);
+
+        requestAnimationFrame(() => {
+          ripple.style.width = "70px";
+          ripple.style.height = "70px";
+          ripple.style.marginLeft = "-35px";
+          ripple.style.marginTop = "-35px";
+          ripple.style.opacity = "0";
+        });
+        setTimeout(() => ripple.remove(), 700);
+      });
+
+      window.addEventListener("mouseup", () => {
+        cursorBody.style.transform = "scale(1) rotate(0deg)";
+      });
+
+      document.addEventListener("mouseleave", () => {
+        cursor.style.opacity = "0";
+      });
+
+      // Smooth Lerp loop for parallax
+      function animLoop() {
+        currPx += (targetPx - currPx) * 0.08;
+        currPy += (targetPy - currPy) * 0.08;
+
+        if (bgCanvas) bgCanvas.style.transform = `translate3d(${currPx * -16}px, ${currPy * -12}px, 0) scale(1.08)`;
+        if (waveLayer) waveLayer.style.transform = `translate3d(${currPx * -24}px, ${currPy * -16}px, 0)`;
+        if (mainStage) mainStage.style.transform = `translate3d(${currPx * 12}px, ${currPy * 8}px, 0)`;
+        if (sabaLogoBox) sabaLogoBox.style.transform = `translate3d(${currPx * 22}px, ${currPy * 14}px, 0)`;
+        if (floatBoatLeft) floatBoatLeft.style.transform = `translate3d(${currPx * 36}px, ${currPy * 24}px, 0)`;
+        if (floatFishLeft) floatFishLeft.style.transform = `translate3d(${currPx * -42}px, ${currPy * -26}px, 0)`;
+        if (floatBoatRight) floatBoatRight.style.transform = `translate3d(${currPx * 44}px, ${currPy * 30}px, 0)`;
+        if (floatCrabRight) floatCrabRight.style.transform = `translate3d(${currPx * -36}px, ${currPy * -20}px, 0)`;
+
+        requestAnimationFrame(animLoop);
+      }
+      animLoop();
+    }
+
+    // Generate rising ocean bubbles
+    const bubbleContainer = document.getElementById("oceanBubblesContainer");
+    if (bubbleContainer) {
+      for (let i = 0; i < 16; i++) {
+        const b = document.createElement("div");
+        const size = 10 + (i % 5) * 8;
+        const dur = 7 + (i % 6) * 3;
+        const delay = i * 0.7;
+        const left = (i * 6.5 + 3) % 96;
+        b.className = "absolute rounded-full bg-cyan-200/30 border border-cyan-100/50 pointer-events-none backdrop-blur-xs";
+        b.style.width = `${size}px`;
+        b.style.height = `${size}px`;
+        b.style.left = `${left}%`;
+        b.style.bottom = "-40px";
+        b.style.animation = `bubbleFloatUp ${dur}s linear infinite`;
+        b.style.animationDelay = `${delay}s`;
+        bubbleContainer.appendChild(b);
+      }
+    }
+  </script>
+</body>
+</html>
