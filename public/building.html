@@ -746,25 +746,42 @@
     const bgmIcon = document.getElementById('bgmIcon');
     let isPlaying = false;
 
+    // Sinkronisasi ikon dengan status play/pause aktual (untuk handle blokir autoplay)
+    bgm.addEventListener('play', () => {
+      isPlaying = true;
+      bgmIcon.innerText = 'music_note';
+    });
+    
+    bgm.addEventListener('pause', () => {
+      isPlaying = false;
+      bgmIcon.innerText = 'music_off';
+    });
+
     function toggleBGM() {
       if (isPlaying) {
         bgm.pause();
-        bgmIcon.innerText = 'music_off';
       } else {
         bgm.play().catch(e => console.log('Audio play failed:', e));
-        bgmIcon.innerText = 'music_note';
       }
-      isPlaying = !isPlaying;
     }
+
+    // Trik Autoplay: Putar lagu saat pengguna mengklik/berinteraksi di manapun di halaman
+    // jika autoplay diblokir oleh browser.
+    document.body.addEventListener('click', function playOnInteract() {
+      if (!isPlaying) {
+        bgm.play().catch(e => console.log('Autoplay on interact failed:', e));
+      }
+      document.body.removeEventListener('click', playOnInteract);
+    }, { once: true });
   </script>
 
   <!-- Background Music Element -->
-  <audio id="bgmAudio" loop src="/saba-saba.mp3"></audio>
+  <audio id="bgmAudio" autoplay loop src="/saba-saba.mp3"></audio>
 
   <!-- BGM Toggle Button -->
   <button 
     id="bgmToggle" 
-    onclick="toggleBGM()"
+    onclick="toggleBGM(); event.stopPropagation();"
     class="fixed bottom-6 right-6 z-50 bg-slate-900/80 backdrop-blur-md border border-cyan-500/40 text-cyan-400 p-3 rounded-full shadow-lg shadow-cyan-900/50 hover:bg-cyan-950 hover:text-cyan-300 transition-all flex items-center justify-center cursor-pointer"
     title="Toggle Background Music"
   >
