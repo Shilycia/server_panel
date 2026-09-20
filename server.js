@@ -554,8 +554,12 @@ app.use((req, res, next) => {
   const projects = readJsonFile(PROJECTS_PATH, []);
 
   // 1. Find target project by Domain (Host header)
-  const host = req.hostname || '';
-  let targetProject = projects.find(p => p.domain && p.domain === host);
+  const host = (req.hostname || '').replace(/^www\./, '');
+  let targetProject = projects.find(p => {
+    if (!p.domain) return false;
+    const cleanDomain = p.domain.replace(/^www\./, '');
+    return cleanDomain === host;
+  });
 
   // 2. Fallback to default project if no domain matches
   if (!targetProject) {
