@@ -1,0 +1,58 @@
+[
+  {
+    "id": "cmd-pm2-status",
+    "name": "PM2 Process Status",
+    "description": "Periksa status semua proses yang berjalan di PM2",
+    "command": "pm2 status",
+    "targetDir": ".",
+    "category": "system"
+  },
+  {
+    "id": "cmd-vps-resources",
+    "name": "Cek Kapasitas Disk & RAM",
+    "description": "Menampilkan penggunaan harddisk dan memori RAM server",
+    "command": "df -h && free -m",
+    "targetDir": ".",
+    "category": "system"
+  },
+  {
+    "id": "cmd-git-pull-porto",
+    "name": "Git Pull prototype_porto",
+    "description": "Tarik kode terbaru dari GitHub untuk proyek utama",
+    "command": "git pull origin main",
+    "targetDir": "prototype_porto",
+    "category": "git"
+  },
+  {
+    "id": "cmd-git-pull-panel",
+    "name": "Git Pull server_panel",
+    "description": "Tarik pembaruan terbaru untuk gateway server_panel",
+    "command": "git pull origin main",
+    "targetDir": "server_panel",
+    "category": "git"
+  },
+  {
+    "id": "cmd-pm2-restart-all",
+    "name": "Restart Semua Layanan PM2",
+    "description": "Restart seluruh service yang terdaftar di PM2",
+    "command": "pm2 restart all",
+    "targetDir": ".",
+    "category": "system"
+  },
+  {
+    "id": "cmd-nginx-reload",
+    "name": "Nginx Test & Reload",
+    "description": "Uji konfigurasi Nginx dan muat ulang service tanpa downtime",
+    "command": "sudo nginx -t && sudo systemctl reload nginx",
+    "targetDir": ".",
+    "category": "system"
+  },
+  {
+    "id": "cmd-clean-npm",
+    "name": "Bersihkan Cache NPM",
+    "description": "Melegakan ruang penyimpanan dengan menghapus cache npm",
+    "command": "npm cache clean --force",
+    "targetDir": ".",
+    "category": "maintenance"
+  }
+]

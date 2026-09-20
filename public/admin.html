@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>shilycia's DEV — Project Control Panel & Gateway Router</title>
-  
+  <title>shilycia's DEV — Multi-Project VPS & Gateway Control Center</title>
+
   <!-- Fonts & Google Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -72,513 +72,1119 @@
   <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
   <!-- Header -->
-  <header class="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800/80 px-6 py-4">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 p-2 text-slate-950">
-          <span class="material-symbols-outlined text-2xl font-bold">terminal</span>
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-white flex items-center gap-2">
-              shilycia&apos;s DEV <span class="text-cyan-400 font-mono text-xs px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40">GATEWAY v1.0</span>
-            </h1>
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Brand Title -->
+      <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 p-2 text-slate-950 font-black">
+            <span class="material-symbols-outlined text-2xl">dns</span>
           </div>
-          <p class="text-xs text-slate-400 font-mono">Control Panel: Maintenance • Publish • Build • Routing</p>
-        </div>
-      </div>
-
-      <!-- Quick Action Buttons -->
-      <div class="flex items-center gap-3 font-mono text-xs">
-        <a 
-          href="/preview/maintenance" 
-          target="_blank"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-        >
-          <span class="material-symbols-outlined text-sm text-amber-400">visibility</span>
-          <span>Pratinjau Maintenance</span>
-        </a>
-
-        <a 
-          href="/?bypass=true" 
-          target="_blank"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-        >
-          <span class="material-symbols-outlined text-sm text-cyan-400">open_in_new</span>
-          <span>Bypass Web</span>
-        </a>
-
-        <div id="liveClock" class="hidden md:flex px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 text-xs">
-          00:00:00
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-8 space-y-8">
-
-    <!-- Top Grid: Status Switches & Routing Diagram -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-      <!-- 1. Maintenance Mode Controller -->
-      <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl relative overflow-hidden flex flex-col justify-between">
-        <div class="flex items-start justify-between">
           <div>
-            <div class="flex items-center gap-2 text-xs uppercase font-mono text-slate-400 mb-1">
-              <span class="material-symbols-outlined text-sm text-cyan-400">traffic</span>
-              <span>Status Mode Maintenance</span>
+            <div class="flex items-center gap-2">
+              <h1 class="font-extrabold text-base sm:text-lg tracking-tight text-white flex items-center gap-2">
+                shilycia&apos;s DEV <span class="text-cyan-400 font-mono text-[11px] px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40">VPS PANEL v2.0</span>
+              </h1>
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             </div>
-            <h2 class="text-xl font-bold text-white">Sameko Saba Theme</h2>
-          </div>
-          <span id="maintenanceBadge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
-            <span>MEMUAT...</span>
-          </span>
-        </div>
-
-        <p class="text-xs text-slate-400 mt-3 leading-relaxed">
-          Saat diaktifkan, pengunjung web di rute utama (<code class="text-cyan-300">/</code>) otomatis melihat halaman interaktif Sameko Saba Beach.
-        </p>
-
-        <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-          <span class="text-xs font-mono text-slate-300">Sakelar Maintenance:</span>
-          <button 
-            id="btnToggleMaintenance" 
-            onclick="toggleMaintenance()" 
-            class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg"
-          >
-            <span class="material-symbols-outlined text-base">sync</span>
-            <span>Ubah Status</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 2. Publish Status Controller -->
-      <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl relative overflow-hidden flex flex-col justify-between">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2 text-xs uppercase font-mono text-slate-400 mb-1">
-              <span class="material-symbols-outlined text-sm text-emerald-400">cloud_upload</span>
-              <span>Status Publikasi (Publish)</span>
-            </div>
-            <h2 class="text-xl font-bold text-white">Production Release</h2>
-          </div>
-          <span id="publishBadge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5">
-            <span>MEMUAT...</span>
-          </span>
-        </div>
-
-        <p class="text-xs text-slate-400 mt-3 leading-relaxed">
-          Status rilis sistem ke publik. Menandakan kesiapan aplikasi untuk menerima lalu lintas produksi di Helipod.io.
-        </p>
-
-        <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-          <span class="text-xs font-mono text-slate-300">Status Publish:</span>
-          <button 
-            id="btnTogglePublish" 
-            onclick="togglePublish()" 
-            class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg"
-          >
-            <span class="material-symbols-outlined text-base">publish</span>
-            <span>Ubah Rilis</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 3. Dynamic Routing Traffic Diagram -->
-      <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl relative overflow-hidden flex flex-col justify-between">
-        <div>
-          <div class="flex items-center gap-2 text-xs uppercase font-mono text-slate-400 mb-1">
-            <span class="material-symbols-outlined text-sm text-sky-400">alt_route</span>
-            <span>Gateway Routing Cerdas</span>
-          </div>
-          <h2 class="text-xl font-bold text-white">Alur Trafik Pengunjung</h2>
-        </div>
-
-        <!-- Flow Visualizer -->
-        <div class="mt-4 p-3 bg-slate-950/80 rounded-xl border border-slate-800/80 font-mono text-xs space-y-2">
-          <div class="flex items-center justify-between text-slate-400">
-            <span>Pengunjung Akses (/)</span>
-            <span class="text-cyan-400">&rarr; Gerbang Gateway &rarr;</span>
-          </div>
-          <div id="routingDestBox" class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2">
-            <span class="material-symbols-outlined text-base">beach_access</span>
-            <span id="routingDestText">Sameko Saba Maintenance</span>
+            <p class="text-xs text-slate-400 font-mono">Multi-Project Management • VPS Space • Command Center</p>
           </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono text-slate-400">
-          <span>Target Web: <strong class="text-slate-200">Port 3000</strong></span>
-          <a href="/" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
-            <span>Buka Rute Publik</span>
-            <span class="material-symbols-outlined text-xs">arrow_outward</span>
-          </a>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Middle: Service Health Monitor -->
-    <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2">
-          <span class="material-symbols-outlined text-cyan-400">health_and_safety</span>
-          <h3 class="font-bold text-base text-white">Pemantau Kesehatan Layanan (Service Health Monitor)</h3>
-        </div>
-        <button onclick="checkHealth()" class="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition">
-          <span class="material-symbols-outlined text-sm">refresh</span>
-          <span>Perbarui Ping</span>
+        <!-- Mobile Logout -->
+        <button onclick="logout()" class="md:hidden p-2 rounded-lg bg-slate-800 hover:bg-rose-900/50 text-slate-300 hover:text-rose-300 transition">
+          <span class="material-symbols-outlined text-sm">logout</span>
         </button>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
-        <!-- Web Service (Port 3000) -->
-        <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-          <div>
-            <div class="text-slate-400 text-[11px]">PORTFOLIO WEB (Next.js)</div>
-            <div class="font-bold text-slate-200 mt-0.5">http://127.0.0.1:3000</div>
-            <div id="webLatency" class="text-[10px] text-slate-500 mt-1">Mengukur...</div>
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 font-mono text-xs w-full md:w-auto overflow-x-auto custom-scrollbar">
+        <button onclick="switchTab('overview')" id="tabBtn-overview" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition bg-cyan-500 text-slate-950">
+          <span class="material-symbols-outlined text-base">dashboard</span>
+          <span>Overview</span>
+        </button>
+        <button onclick="switchTab('projects')" id="tabBtn-projects" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition text-slate-400 hover:text-white">
+          <span class="material-symbols-outlined text-base">folder_special</span>
+          <span>Proyek</span>
+          <span id="navProjectCount" class="bg-slate-800 px-1.5 py-0.2 rounded text-[10px] text-cyan-300">3</span>
+        </button>
+        <button onclick="switchTab('storage')" id="tabBtn-storage" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition text-slate-400 hover:text-white">
+          <span class="material-symbols-outlined text-base">pie_chart</span>
+          <span>Ruang VPS</span>
+        </button>
+        <button onclick="switchTab('commands')" id="tabBtn-commands" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition text-slate-400 hover:text-white">
+          <span class="material-symbols-outlined text-base">terminal</span>
+          <span>Command Center</span>
+        </button>
+        <button onclick="switchTab('settings')" id="tabBtn-settings" class="tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition text-slate-400 hover:text-white">
+          <span class="material-symbols-outlined text-base">settings</span>
+          <span>Pengaturan</span>
+        </button>
+      </nav>
+
+      <!-- User & Quick Links -->
+      <div class="hidden md:flex items-center gap-2 font-mono text-xs">
+        <a href="/preview/maintenance" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
+          <span class="material-symbols-outlined text-sm">beach_access</span>
+          <span>Pratinjau Saba</span>
+        </a>
+        <button onclick="logout()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-rose-900/60 text-slate-300 hover:text-rose-300 border border-slate-700 transition cursor-pointer">
+          <span class="material-symbols-outlined text-sm">logout</span>
+          <span>Keluar</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-6 py-8">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: OVERVIEW & GATEWAY -->
+    <!-- ============================================================== -->
+    <div id="tabContent-overview" class="tab-pane space-y-6">
+      
+      <!-- Top Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Master Maintenance Switch -->
+        <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 text-xs uppercase font-mono text-slate-400 mb-1">
+                <span class="material-symbols-outlined text-sm text-cyan-400">traffic</span>
+                <span>Gateway Status</span>
+              </div>
+              <h2 class="text-xl font-bold text-white">Sameko Saba Maintenance</h2>
+            </div>
+            <span id="gatewayStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+              <span>MEMUAT...</span>
+            </span>
           </div>
-          <span id="webStatusBadge" class="px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-slate-400">...</span>
+
+          <p class="text-xs text-slate-400 mt-3 leading-relaxed">
+            Mengarahkan seluruh lalu lintas publik (<code class="text-cyan-300">/</code>) ke halaman Sameko Saba Beach. Pengunjung tidak dapat mengakses portofolio kecuali menggunakan bypass.
+          </p>
+
+          <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-300">Status Gerbang:</span>
+            <button 
+              id="btnMasterMaintenance" 
+              onclick="toggleGlobalMaintenance()" 
+              class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg"
+            >
+              <span class="material-symbols-outlined text-base">sync</span>
+              <span>Ubah Status</span>
+            </button>
+          </div>
         </div>
 
-        <!-- API Service (Port 3001) -->
-        <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
-          <div>
-            <div class="text-slate-400 text-[11px]">CORE REST API (NestJS)</div>
-            <div class="font-bold text-slate-200 mt-0.5">http://127.0.0.1:3001</div>
-            <div id="apiLatency" class="text-[10px] text-slate-500 mt-1">Mengukur...</div>
+        <!-- VPS Server Node Status -->
+        <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center gap-1.5 text-xs uppercase font-mono text-slate-400 mb-1">
+                <span class="material-symbols-outlined text-sm text-emerald-400">cloud</span>
+                <span>Infrastruktur Host</span>
+              </div>
+              <h2 class="text-xl font-bold text-white">Helipod.io Cloud</h2>
+            </div>
+            <span class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/40">
+              43.173.33.116
+            </span>
           </div>
-          <span id="apiStatusBadge" class="px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-slate-400">...</span>
+
+          <div class="mt-3 space-y-1.5 font-mono text-xs text-slate-400">
+            <div class="flex justify-between"><span>Sistem Operasi:</span> <strong class="text-slate-200">Ubuntu 24.04 LTS</strong></div>
+            <div class="flex justify-between"><span>Process Manager:</span> <strong class="text-slate-200">PM2 Active</strong></div>
+            <div class="flex justify-between"><span>Web Server:</span> <strong class="text-slate-200">Nginx Reverse Proxy</strong></div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">SSH User: <strong class="text-slate-200">root</strong></span>
+            <a href="http://43.173.33.116" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
+              <span>Buka Server IP</span>
+              <span class="material-symbols-outlined text-xs">open_in_new</span>
+            </a>
+          </div>
         </div>
 
-        <!-- Helipod Host (Remote) -->
-        <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+        <!-- Traffic Routing Visualizer -->
+        <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
           <div>
-            <div class="text-slate-400 text-[11px]">HELIPOD HOST CLOUD</div>
-            <div class="font-bold text-slate-200 mt-0.5">43.173.33.116 (Ubuntu)</div>
-            <div class="text-[10px] text-slate-500 mt-1">Stasiun Produksi</div>
+            <div class="flex items-center gap-1.5 text-xs uppercase font-mono text-slate-400 mb-1">
+              <span class="material-symbols-outlined text-sm text-sky-400">alt_route</span>
+              <span>Alur Routing Publik</span>
+            </div>
+            <h2 class="text-xl font-bold text-white">Tujuan Lalu Lintas</h2>
           </div>
-          <span class="px-2 py-1 rounded text-[11px] font-bold bg-cyan-950 text-cyan-300 border border-cyan-500/30">ONLINE</span>
+
+          <div class="mt-3 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs space-y-2">
+            <div class="flex items-center justify-between text-slate-400">
+              <span>Pengunjung (/)</span>
+              <span class="text-cyan-400">&rarr; Gateway &rarr;</span>
+            </div>
+            <div id="routingDestDisplay" class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2">
+              <span class="material-symbols-outlined text-base">beach_access</span>
+              <span id="routingDestTitle">Sameko Saba Maintenance</span>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>Bypass Admin: <code class="text-cyan-300">?bypass=true</code></span>
+            <a href="/?bypass=true" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
+              <span>Bypass Sekarang</span>
+              <span class="material-symbols-outlined text-xs">arrow_outward</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Services Live Status Table -->
+      <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-cyan-400">hub</span>
+            <h3 class="font-bold text-base text-white">Status Layanan Aktif di VPS</h3>
+          </div>
+          <button onclick="loadOverviewData()" class="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            <span>Perbarui Status</span>
+          </button>
+        </div>
+
+        <div id="overviewProjectGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+          <!-- Populated by JavaScript -->
         </div>
       </div>
+
     </div>
 
-    <!-- Bottom: Build Console with Live Terminal Logs -->
-    <div class="bg-slate-900/60 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl space-y-4">
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <!-- ============================================================== -->
+    <!-- TAB 2: MULTI-PROJECT HUB -->
+    <!-- ============================================================== -->
+    <div id="tabContent-projects" class="tab-pane hidden space-y-6">
+      
+      <!-- Top Bar: Project Count & Add Project Button -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/70 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl">
         <div>
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-amber-400">terminal</span>
-            <h3 class="font-bold text-base text-white">Pusat Eksekusi Build Proyek (Build Studio)</h3>
-          </div>
-          <p class="text-xs text-slate-400 mt-0.5">Jalankan kompilasi kode proyek secara lokal dan pantau log output secara langsung.</p>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-cyan-400">layers</span>
+            <span>Pusat Manajemen Multi-Proyek VPS</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Kelola status, build, dan mode pemeliharaan masing-masing proyek secara mandiri.</p>
         </div>
 
-        <!-- Action Controls -->
-        <div class="flex items-center gap-3 w-full sm:w-auto font-mono text-xs">
-          <select id="buildTargetSelect" class="bg-slate-950 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 outline-none focus:border-cyan-500">
-            <option value="portfolio-web">portfolio-web (Next.js)</option>
-            <option value="portfolio-api">portfolio-api (NestJS)</option>
-          </select>
+        <button 
+          onclick="openAddProjectModal()" 
+          class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs font-mono transition flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/25"
+        >
+          <span class="material-symbols-outlined text-base">add_circle</span>
+          <span>+ Tambah Proyek Baru</span>
+        </button>
+      </div>
+
+      <!-- Project Cards Grid -->
+      <div id="projectsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Injected via JavaScript -->
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: VPS SPACE & RESOURCES -->
+    <!-- ============================================================== -->
+    <div id="tabContent-storage" class="tab-pane hidden space-y-6">
+      
+      <!-- Storage Breakdown Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Disk Usage Card -->
+        <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase font-mono text-slate-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-cyan-400">hard_drive</span>
+                <span>Kapasitas Harddisk VPS (/)</span>
+              </span>
+              <span id="diskPercentBadge" class="text-xs font-mono font-bold text-cyan-300">0%</span>
+            </div>
+            <h3 id="diskUsageTitle" class="text-2xl font-black text-white">0 GB / 0 GB</h3>
+          </div>
+
+          <div class="my-4">
+            <div class="w-full h-3.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+              <div id="diskProgressBar" class="h-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-between text-[11px] font-mono text-slate-400 mt-2">
+              <span>Tersedia: <strong id="diskFreeLabel" class="text-emerald-400">0 GB</strong></span>
+              <span>Terpakai: <strong id="diskUsedLabel" class="text-slate-200">0 GB</strong></span>
+            </div>
+          </div>
+
+          <button onclick="cleanCache()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-mono font-bold transition flex items-center justify-center gap-2 border border-slate-700 cursor-pointer">
+            <span class="material-symbols-outlined text-sm text-amber-400">cleaning_services</span>
+            <span>Bersihkan Cache & Temp VPS</span>
+          </button>
+        </div>
+
+        <!-- RAM Usage Card -->
+        <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase font-mono text-slate-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-purple-400">memory</span>
+                <span>Memori RAM Server</span>
+              </span>
+              <span id="ramPercentBadge" class="text-xs font-mono font-bold text-purple-300">0%</span>
+            </div>
+            <h3 id="ramUsageTitle" class="text-2xl font-black text-white">0 MB / 0 MB</h3>
+          </div>
+
+          <div class="my-4">
+            <div class="w-full h-3.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+              <div id="ramProgressBar" class="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500" style="width: 0%;"></div>
+            </div>
+            <div class="flex justify-between text-[11px] font-mono text-slate-400 mt-2">
+              <span>RAM Bebas: <strong id="ramFreeLabel" class="text-emerald-400">0 MB</strong></span>
+              <span>RAM Terpakai: <strong id="ramUsedLabel" class="text-slate-200">0 MB</strong></span>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-950 font-mono text-[11px] text-slate-400 flex justify-between">
+            <span>Status Beban:</span>
+            <strong id="ramHealthLabel" class="text-emerald-400">Optimal</strong>
+          </div>
+        </div>
+
+        <!-- CPU Load Card -->
+        <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs uppercase font-mono text-slate-400 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-sky-400">speed</span>
+                <span>Prosesor CPU Server</span>
+              </span>
+              <span id="cpuCoreBadge" class="text-xs font-mono font-bold text-sky-300">0 Cores</span>
+            </div>
+            <h3 id="cpuModelTitle" class="text-lg font-bold text-white truncate">Prosesor VPS</h3>
+          </div>
+
+          <div class="my-4 p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs space-y-2">
+            <div class="flex justify-between text-slate-400">
+              <span>Load Average (1m):</span>
+              <strong id="cpuLoadLabel" class="text-cyan-300 font-bold">0.00</strong>
+            </div>
+            <div class="flex justify-between text-slate-400">
+              <span>Server Uptime:</span>
+              <strong id="uptimeLabel" class="text-slate-200">0 jam</strong>
+            </div>
+          </div>
+
+          <div class="p-2.5 rounded-xl bg-slate-950 font-mono text-[11px] text-slate-400 flex justify-between">
+            <span>Platform:</span>
+            <strong id="platformLabel" class="text-slate-200">Linux</strong>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Project Space Allocation Table ("Pembagian Ruang Proyek") -->
+      <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-cyan-400">folder_zip</span>
+            <h3 class="font-bold text-base text-white">Pembagian Alokasi Ruang Penyimpanan per Proyek</h3>
+          </div>
+          <button onclick="loadStorageData()" class="text-xs font-mono text-slate-400 hover:text-cyan-300 flex items-center gap-1 transition">
+            <span class="material-symbols-outlined text-sm">refresh</span>
+            <span>Hitung Ulang Ukuran</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left font-mono text-xs">
+            <thead>
+              <tr class="border-b border-slate-800 text-slate-400 text-[11px] uppercase">
+                <th class="pb-3 font-semibold">Nama Proyek / Ruang</th>
+                <th class="pb-3 font-semibold">Direktori Folder</th>
+                <th class="pb-3 font-semibold">Ukuran Ruang</th>
+                <th class="pb-3 font-semibold text-right">Persentase Perkiraan</th>
+              </tr>
+            </thead>
+            <tbody id="projectStorageTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: COMMAND CENTER & SCRIPT IMPORTER -->
+    <!-- ============================================================== -->
+    <div id="tabContent-commands" class="tab-pane hidden space-y-6">
+      
+      <!-- Top Section: Interactive Shell Terminal Box -->
+      <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl space-y-4">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-400">terminal</span>
+              <span>Interactive Shell Terminal</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Ketik dan jalankan perintah shell langsung pada VPS atau pilih dari perpustakaan perintah.</p>
+          </div>
 
           <button 
-            id="btnRunBuild"
-            onclick="triggerBuild()"
-            class="px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold transition flex items-center gap-2 cursor-pointer shadow-lg shadow-cyan-500/30"
+            onclick="openImportCommandModal()" 
+            class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-mono font-bold transition flex items-center gap-1.5 border border-cyan-500/40 cursor-pointer"
+          >
+            <span class="material-symbols-outlined text-base">upload_file</span>
+            <span>+ Import Script / Perintah Baru</span>
+          </button>
+        </div>
+
+        <!-- Command Input Box -->
+        <form onsubmit="runCustomCommand(event)" class="flex gap-2">
+          <div class="relative flex-grow font-mono text-xs">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-cyan-400 font-bold">
+              $&gt;
+            </span>
+            <input 
+              type="text" 
+              id="terminalInput" 
+              placeholder="Ketik perintah shell (contoh: git pull, pm2 status, df -h, npm run build)..." 
+              class="w-full pl-9 pr-4 py-3 bg-black/80 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400 font-mono text-xs shadow-inner"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            id="btnRunTerminal"
+            class="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-mono font-bold text-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-lg shadow-cyan-500/20"
           >
             <span class="material-symbols-outlined text-base">play_arrow</span>
-            <span>Jalankan Build</span>
+            <span>Jalankan</span>
+          </button>
+        </form>
+
+        <!-- Terminal Output Window -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-mono text-slate-400 px-1">
+            <div class="flex items-center gap-3">
+              <span>Status: <strong id="terminalStatus" class="text-slate-200">Siap</strong></span>
+              <span>|</span>
+              <span id="terminalDuration">0.0s</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="terminalAutoScroll" checked class="accent-cyan-500" />
+                <span>Auto-scroll</span>
+              </label>
+              <button onclick="clearTerminalLogs()" class="hover:text-white transition flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs">delete</span>
+                <span>Hapus Layar</span>
+              </button>
+            </div>
+          </div>
+
+          <div 
+            id="terminalScreen" 
+            class="w-full h-80 bg-black/95 rounded-xl p-4 font-mono text-xs text-slate-300 overflow-y-auto custom-scrollbar border border-slate-800 shadow-inner whitespace-pre-wrap leading-relaxed"
+          >
+<span class="text-slate-500">[SYSTEM] shilycia's DEV Web Terminal v2.0 Ready.</span>
+<span class="text-slate-500">[SYSTEM] Masukkan perintah atau pilih salah satu kartu di bawah untuk mengeksekusi script.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Preset & Imported Commands Library -->
+      <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-cyan-400">bookmark</span>
+            <h3 class="font-bold text-base text-white">Perpustakaan Perintah & Skrip Tersimpan (Command Recipes)</h3>
+          </div>
+          <span class="text-xs font-mono text-slate-400">Klik &ldquo;Jalankan&rdquo; untuk eksekusi 1-klik</span>
+        </div>
+
+        <div id="commandsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Populated by JavaScript -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- TAB 5: SETTINGS & SECURITY -->
+    <!-- ============================================================== -->
+    <div id="tabContent-settings" class="tab-pane hidden space-y-6">
+      
+      <div class="max-w-2xl mx-auto bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-8 shadow-xl space-y-6">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-cyan-400">security</span>
+            <span>Keamanan & Kredensial Panel</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Ubah nama pengguna dan kata sandi login untuk melindungi panel kontrol VPS Anda.</p>
+        </div>
+
+        <div id="pwdAlert" class="hidden p-3.5 rounded-xl text-xs font-mono"></div>
+
+        <form onsubmit="changePassword(event)" class="space-y-4 font-mono text-xs">
+          <div>
+            <label class="block text-slate-300 uppercase mb-1.5">Kata Sandi Saat Ini</label>
+            <input type="password" id="currentPwd" required placeholder="••••••••••••" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+          </div>
+
+          <div>
+            <label class="block text-slate-300 uppercase mb-1.5">Username Baru (Opsional)</label>
+            <input type="text" id="newUsername" placeholder="admin" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+          </div>
+
+          <div>
+            <label class="block text-slate-300 uppercase mb-1.5">Kata Sandi Baru (Min. 6 Karakter)</label>
+            <input type="password" id="newPwd" required placeholder="••••••••••••" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+          </div>
+
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold font-mono transition flex items-center gap-1.5 cursor-pointer shadow-lg shadow-cyan-500/20">
+            <span class="material-symbols-outlined text-base">save</span>
+            <span>Simpan Perubahan Kredensial</span>
+          </button>
+        </form>
+
+        <div class="pt-6 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
+          <span class="text-slate-400">Keluar dari sesi saat ini:</span>
+          <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-500/40 text-rose-300 transition flex items-center gap-1.5 cursor-pointer">
+            <span class="material-symbols-outlined text-sm">logout</span>
+            <span>Logout Sekarang</span>
           </button>
         </div>
       </div>
 
-      <!-- Build Info Bar -->
-      <div class="flex items-center justify-between bg-slate-950 px-4 py-2.5 rounded-xl border border-slate-800 font-mono text-xs">
-        <div class="flex items-center gap-4">
-          <span class="flex items-center gap-1.5">
-            <span class="text-slate-400">Status:</span>
-            <span id="buildStatusLabel" class="font-bold text-slate-200">Idle (Siap)</span>
-          </span>
-          <span class="text-slate-600">|</span>
-          <span class="flex items-center gap-1.5">
-            <span class="text-slate-400">Durasi:</span>
-            <span id="buildDurationLabel" class="text-cyan-300">0.0s</span>
-          </span>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <label class="flex items-center gap-1.5 text-slate-400 cursor-pointer">
-            <input type="checkbox" id="autoScrollCheck" checked class="accent-cyan-500">
-            <span>Auto-scroll</span>
-          </label>
-          <button onclick="clearTerminal()" class="text-slate-400 hover:text-white transition flex items-center gap-1">
-            <span class="material-symbols-outlined text-xs">delete</span>
-            <span>Bersihkan</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Terminal Output Container -->
-      <div 
-        id="terminalContainer" 
-        class="w-full h-80 bg-black/90 rounded-xl p-4 font-mono text-xs text-slate-300 overflow-y-auto custom-scrollbar border border-slate-800/80 shadow-inner whitespace-pre-wrap leading-relaxed"
-      >
-<span class="text-slate-500">[SYSTEM] shilycia's DEV Build Terminal initialized.</span>
-<span class="text-slate-500">[SYSTEM] Pilih target dan klik "Jalankan Build" untuk memulai kompilasi.</span>
-      </div>
     </div>
 
   </main>
 
+  <!-- ============================================================== -->
+  <!-- MODAL: TAMBAH PROYEK BARU -->
+  <!-- ============================================================== -->
+  <div id="addProjectModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 max-w-lg w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-cyan-400">add_to_photos</span>
+          <span>Tambah Proyek Baru ke Panel</span>
+        </h3>
+        <button onclick="closeAddProjectModal()" class="text-slate-400 hover:text-white">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="submitNewProject(event)" class="space-y-3.5 font-mono text-xs">
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Nama Proyek</label>
+          <input type="text" id="mProjName" required placeholder="Contoh: Blog NextJS / Mobile API" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Tipe Proyek / Framework</label>
+          <input type="text" id="mProjType" placeholder="Contoh: Next.js / Express / Vite" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 uppercase mb-1">Direktori Folder</label>
+            <input type="text" id="mProjDir" required placeholder="folder-proyek" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+          </div>
+          <div>
+            <label class="block text-slate-300 uppercase mb-1">Port HTTP</label>
+            <input type="number" id="mProjPort" placeholder="Contoh: 3002" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Perintah Build</label>
+          <input type="text" id="mProjBuild" placeholder="npm run build" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Perintah Start</label>
+          <input type="text" id="mProjStart" placeholder="npm start" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Deskripsi Singkat</label>
+          <input type="text" id="mProjDesc" placeholder="Deskripsi peran proyek..." class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="closeAddProjectModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold transition">Simpan Proyek</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: IMPORT SCRIPT / COMMAND BARU -->
+  <!-- ============================================================== -->
+  <div id="importCommandModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 max-w-lg w-full rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+          <span class="material-symbols-outlined text-cyan-400">upload_file</span>
+          <span>Import / Simpan Custom Command</span>
+        </h3>
+        <button onclick="closeImportCommandModal()" class="text-slate-400 hover:text-white">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="submitImportedCommand(event)" class="space-y-3.5 font-mono text-xs">
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Nama Perintah / Skrip</label>
+          <input type="text" id="mCmdName" required placeholder="Contoh: Backup Database / Clean Node Modules" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Perintah Shell (.sh / bash / shell inline)</label>
+          <textarea id="mCmdScript" rows="3" required placeholder="Contoh: git pull origin main && pm2 restart all" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400 font-mono text-xs"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 uppercase mb-1">Deskripsi Ringkas</label>
+          <input type="text" id="mCmdDesc" placeholder="Keterangan fungsi perintah ini..." class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3">
+          <button type="button" onclick="closeImportCommandModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold transition">Simpan ke Perpustakaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="border-t border-slate-800/80 px-6 py-4 mt-auto text-xs font-mono text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl w-full mx-auto">
-    <div>&copy; 2026 shilycia&apos;s DEV • Bintang Putra Adryan</div>
+    <div>&copy; 2026 shilycia&apos;s DEV • Managed by Bintang Putra Adryan</div>
     <div class="flex items-center gap-3">
-      <span>Workspace: D:\beliau\portofolio_diyul</span>
+      <span>Helipod.io Cloud Station</span>
       <span>•</span>
-      <span>Gateway: D:\beliau\shilyciaDEV</span>
+      <span>VPS Port: 8080 Gateway</span>
     </div>
   </footer>
 
-  <!-- Admin Script Logic -->
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT LOGIC ENGINE -->
+  <!-- ============================================================== -->
   <script>
-    let isBuilding = false;
-    let buildStartTime = 0;
-    let buildTimerInterval = null;
+    let activeTab = 'overview';
+    let isCommandRunning = false;
+    let cmdStartTime = 0;
+    let cmdTimerInterval = null;
 
-    // Clock
-    setInterval(() => {
-      const now = new Date();
-      const el = document.getElementById("liveClock");
-      if (el) el.innerText = now.toLocaleTimeString();
-    }, 1000);
+    // Tab Switching
+    function switchTab(tabId) {
+      activeTab = tabId;
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.className = 'tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition text-slate-400 hover:text-white';
+      });
 
-    // Fetch initial status
-    async function loadStatus() {
+      const pane = document.getElementById(`tabContent-${tabId}`);
+      const btn = document.getElementById(`tabBtn-${tabId}`);
+      if (pane) pane.classList.remove('hidden');
+      if (btn) btn.className = 'tab-btn px-3.5 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition bg-cyan-500 text-slate-950';
+
+      if (tabId === 'overview') loadOverviewData();
+      if (tabId === 'projects') loadProjectsData();
+      if (tabId === 'storage') loadStorageData();
+      if (tabId === 'commands') loadCommandsData();
+    }
+
+    // Auth Check
+    async function checkAuth() {
       try {
-        const res = await fetch("/api/status");
+        const res = await fetch('/api/auth/check');
         const data = await res.json();
-        updateUIWithStatus(data);
+        if (!data.isLoggedIn) window.location.href = '/login';
+      } catch {
+        window.location.href = '/login';
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } finally {
+        window.location.href = '/login';
+      }
+    }
+
+    // 1. Overview Loader
+    async function loadOverviewData() {
+      try {
+        const [statusRes, projRes] = await Promise.all([
+          fetch('/api/status'),
+          fetch('/api/projects')
+        ]);
+        const status = await statusRes.json();
+        const projects = await projRes.json();
+
+        // Update Gateway Badge
+        const gBadge = document.getElementById('gatewayStatusBadge');
+        const btnM = document.getElementById('btnMasterMaintenance');
+        const destTitle = document.getElementById('routingDestTitle');
+        const destBox = document.getElementById('routingDestDisplay');
+
+        if (status.maintenance) {
+          gBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5';
+          gBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>AKTIF (Maintenance)</span>';
+          btnM.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-emerald-600 hover:bg-emerald-500 text-white';
+          btnM.innerHTML = '<span class="material-symbols-outlined text-base">power_settings_new</span><span>Matikan Maintenance</span>';
+
+          destBox.className = 'p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2';
+          destTitle.innerText = 'Sameko Saba Maintenance Page (Lokal)';
+        } else {
+          gBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5';
+          gBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>NONAKTIF (Normal)</span>';
+          btnM.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-amber-600 hover:bg-amber-500 text-white';
+          btnM.innerHTML = '<span class="material-symbols-outlined text-base">construction</span><span>Aktifkan Maintenance</span>';
+
+          destBox.className = 'p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center gap-2';
+          destTitle.innerText = 'Portfolio Web Utama (Proxy ke :3000)';
+        }
+
+        // Render Service Pills in Overview
+        const grid = document.getElementById('overviewProjectGrid');
+        grid.innerHTML = '';
+        projects.forEach(p => {
+          const isOnline = p.online;
+          grid.innerHTML += `
+            <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+              <div>
+                <div class="text-slate-400 text-[11px]">${p.type}</div>
+                <div class="font-bold text-slate-200 mt-0.5">${p.name}</div>
+                <div class="text-[10px] text-slate-500 mt-1">Port: ${p.port || 'N/A'} • ${p.sizeMB} MB</div>
+              </div>
+              <span class="px-2 py-1 rounded text-[11px] font-bold ${isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-rose-950 text-rose-300 border border-rose-500/30'}">
+                ${isOnline ? 'ONLINE' : 'OFFLINE'}
+              </span>
+            </div>
+          `;
+        });
+
+        document.getElementById('navProjectCount').innerText = projects.length;
       } catch (err) {
-        console.error("Failed to load status:", err);
+        console.error('Failed to load overview:', err);
       }
     }
 
-    function updateUIWithStatus(data) {
-      // Maintenance Badge & Button
-      const mBadge = document.getElementById("maintenanceBadge");
-      const btnM = document.getElementById("btnToggleMaintenance");
-      const routeBox = document.getElementById("routingDestBox");
-      const routeText = document.getElementById("routingDestText");
-
-      if (data.maintenance) {
-        mBadge.className = "px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5";
-        mBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>AKTIF (Maintenance)</span>`;
-        btnM.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-emerald-600 hover:bg-emerald-500 text-white";
-        btnM.innerHTML = `<span class="material-symbols-outlined text-base">power_settings_new</span><span>Matikan Maintenance</span>`;
-
-        routeBox.className = "p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2";
-        routeText.innerText = "Sameko Saba Maintenance Page (Lokal)";
-      } else {
-        mBadge.className = "px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5";
-        mBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>NONAKTIF (Normal)</span>`;
-        btnM.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-amber-600 hover:bg-amber-500 text-white";
-        btnM.innerHTML = `<span class="material-symbols-outlined text-base">construction</span><span>Aktifkan Maintenance</span>`;
-
-        routeBox.className = "p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center gap-2";
-        routeText.innerText = "Portfolio Web Utama (Proxy ke :3000)";
-      }
-
-      // Publish Badge & Button
-      const pBadge = document.getElementById("publishBadge");
-      const btnP = document.getElementById("btnTogglePublish");
-
-      if (data.published) {
-        pBadge.className = "px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1.5";
-        pBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-cyan-400"></span><span>PUBLISHED (Live)</span>`;
-        btnP.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700";
-        btnP.innerHTML = `<span class="material-symbols-outlined text-base">pause</span><span>Ubah ke Draft</span>`;
-      } else {
-        pBadge.className = "px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5";
-        pBadge.innerHTML = `<span>DRAFT / OFF</span>`;
-        btnP.className = "px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-cyan-600 hover:bg-cyan-500 text-white";
-        btnP.innerHTML = `<span class="material-symbols-outlined text-base">publish</span><span>Publikasikan Sekarang</span>`;
-      }
-    }
-
-    // Toggle Maintenance
-    async function toggleMaintenance() {
-      const btn = document.getElementById("btnToggleMaintenance");
-      btn.disabled = true;
-      btn.classList.add("opacity-50");
+    // Toggle Global Maintenance
+    async function toggleGlobalMaintenance() {
       try {
-        const res = await fetch("/api/maintenance/toggle", { method: "POST" });
-        const data = await res.json();
-        updateUIWithStatus(data);
+        await fetch('/api/maintenance/toggle', { method: 'POST' });
+        loadOverviewData();
       } catch (e) {
-        alert("Gagal mengubah status maintenance: " + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove("opacity-50");
+        alert('Gagal mengubah maintenance: ' + e.message);
       }
     }
 
-    // Toggle Publish
-    async function togglePublish() {
-      const btn = document.getElementById("btnTogglePublish");
-      btn.disabled = true;
-      btn.classList.add("opacity-50");
+    // 2. Projects Hub Loader
+    async function loadProjectsData() {
       try {
-        const res = await fetch("/api/publish/toggle", { method: "POST" });
-        const data = await res.json();
-        updateUIWithStatus(data);
-      } catch (e) {
-        alert("Gagal mengubah status publish: " + e.message);
-      } finally {
-        btn.disabled = false;
-        btn.classList.remove("opacity-50");
-      }
-    }
+        const res = await fetch('/api/projects');
+        const projects = await res.json();
+        const container = document.getElementById('projectsContainer');
+        container.innerHTML = '';
 
-    // Service Health Check
-    async function checkHealth() {
-      const webBadge = document.getElementById("webStatusBadge");
-      const webLat = document.getElementById("webLatency");
-      const apiBadge = document.getElementById("apiStatusBadge");
-      const apiLat = document.getElementById("apiLatency");
+        projects.forEach(p => {
+          const isOnline = p.online;
+          const isMaint = p.maintenance;
 
-      webBadge.innerText = "Pinging...";
-      apiBadge.innerText = "Pinging...";
+          container.innerHTML += `
+            <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between space-y-4">
+              <div>
+                <div class="flex items-start justify-between">
+                  <div>
+                    <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${p.type}</span>
+                    <h3 class="text-lg font-bold text-white mt-1.5">${p.name}</h3>
+                  </div>
+                  <span class="px-2 py-1 rounded text-[11px] font-mono font-bold ${isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">
+                    ${isOnline ? 'ONLINE' : 'OFFLINE'}
+                  </span>
+                </div>
 
-      try {
-        const res = await fetch("/api/health");
-        const data = await res.json();
+                <p class="text-xs text-slate-400 mt-2 leading-relaxed line-clamp-2">${p.description}</p>
+                
+                <div class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/80 font-mono text-[11px] text-slate-400 space-y-1">
+                  <div class="flex justify-between"><span>Direktori:</span> <strong class="text-slate-200 truncate ml-2">${p.dir}</strong></div>
+                  <div class="flex justify-between"><span>Port HTTP:</span> <strong class="text-cyan-300">${p.port || 'Static'}</strong></div>
+                  <div class="flex justify-between"><span>Ukuran Ruang:</span> <strong class="text-emerald-400">${p.sizeMB} MB</strong></div>
+                </div>
+              </div>
 
-        if (data.web.online) {
-          webBadge.className = "px-2 py-1 rounded text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/30";
-          webBadge.innerText = "ONLINE";
-          webLat.innerText = `Latency: ${data.web.latencyMs}ms`;
-        } else {
-          webBadge.className = "px-2 py-1 rounded text-[11px] font-bold bg-rose-950 text-rose-300 border border-rose-500/30";
-          webBadge.innerText = "OFFLINE";
-          webLat.innerText = "Tidak tersambung";
-        }
+              <div class="space-y-2 pt-3 border-t border-slate-800/80 font-mono text-xs">
+                <!-- Maintenance Switch per project -->
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400">Sameko Saba Mode:</span>
+                  <button 
+                    onclick="toggleProjectMaintenance('${p.id}')"
+                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${isMaint ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-400'}"
+                  >
+                    ${isMaint ? 'AKTIF' : 'NONAKTIF'}
+                  </button>
+                </div>
 
-        if (data.api.online) {
-          apiBadge.className = "px-2 py-1 rounded text-[11px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/30";
-          apiBadge.innerText = "ONLINE";
-          apiLat.innerText = `Latency: ${data.api.latencyMs}ms`;
-        } else {
-          apiBadge.className = "px-2 py-1 rounded text-[11px] font-bold bg-rose-950 text-rose-300 border border-rose-500/30";
-          apiBadge.innerText = "OFFLINE";
-          apiLat.innerText = "Tidak tersambung";
-        }
-      } catch (e) {
-        webBadge.innerText = "ERROR";
-        apiBadge.innerText = "ERROR";
-      }
-    }
-
-    // Clear Terminal
-    function clearTerminal() {
-      const term = document.getElementById("terminalContainer");
-      term.innerHTML = '<span class="text-slate-500">[SYSTEM] Terminal dibersihkan.</span>\n';
-    }
-
-    function appendTerminal(text, color = "text-slate-300") {
-      const term = document.getElementById("terminalContainer");
-      const span = document.createElement("span");
-      span.className = `${color} block`;
-      span.textContent = text;
-      term.appendChild(span);
-
-      if (document.getElementById("autoScrollCheck").checked) {
-        term.scrollTop = term.scrollHeight;
-      }
-    }
-
-    // Trigger Build
-    async function triggerBuild() {
-      if (isBuilding) return;
-      const target = document.getElementById("buildTargetSelect").value;
-      const btn = document.getElementById("btnRunBuild");
-      const statusLabel = document.getElementById("buildStatusLabel");
-      const durLabel = document.getElementById("buildDurationLabel");
-
-      isBuilding = true;
-      btn.disabled = true;
-      btn.classList.add("opacity-50");
-      statusLabel.className = "font-bold text-amber-300 animate-pulse";
-      statusLabel.innerText = `Sedang kompilasi ${target}...`;
-
-      appendTerminal(`\n[BUILD START] Menjalankan 'npm run build' pada ${target}...`, "text-cyan-400 font-bold");
-
-      buildStartTime = Date.now();
-      clearInterval(buildTimerInterval);
-      buildTimerInterval = setInterval(() => {
-        const elapsed = ((Date.now() - buildStartTime) / 1000).toFixed(1);
-        durLabel.innerText = `${elapsed}s`;
-      }, 100);
-
-      // Connect to SSE for live streaming logs
-      const eventSource = new EventSource(`/api/build/logs?target=${target}`);
-
-      eventSource.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg.type === "log") {
-            appendTerminal(msg.text, msg.stream === "stderr" ? "text-amber-300" : "text-slate-300");
-          } else if (msg.type === "done") {
-            eventSource.close();
-            clearInterval(buildTimerInterval);
-            isBuilding = false;
-            btn.disabled = false;
-            btn.classList.remove("opacity-50");
-
-            if (msg.exitCode === 0) {
-              statusLabel.className = "font-bold text-emerald-400";
-              statusLabel.innerText = "Build Berhasil (Exit 0)";
-              appendTerminal(`[BUILD SUCCESS] Kompilasi ${target} selesai dengan sukses!\n`, "text-emerald-400 font-bold");
-            } else {
-              statusLabel.className = "font-bold text-rose-400";
-              statusLabel.innerText = `Build Gagal (Exit ${msg.exitCode})`;
-              appendTerminal(`[BUILD FAILED] Kompilasi gagal dengan exit code ${msg.exitCode}.\n`, "text-rose-400 font-bold");
-            }
-          }
-        } catch (e) {
-          appendTerminal(event.data);
-        }
-      };
-
-      eventSource.onerror = () => {
-        eventSource.close();
-        clearInterval(buildTimerInterval);
-        isBuilding = false;
-        btn.disabled = false;
-        btn.classList.remove("opacity-50");
-        statusLabel.className = "font-bold text-slate-400";
-        statusLabel.innerText = "Koneksi build ditutup";
-      };
-
-      // Trigger the build endpoint
-      try {
-        await fetch("/api/build", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ target })
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                  <button 
+                    onclick="runProjectBuild('${p.id}')"
+                    class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-sm text-cyan-400">build</span>
+                    <span>Build</span>
+                  </button>
+                  <button 
+                    onclick="deleteProject('${p.id}')"
+                    class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 font-bold transition flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
+                  >
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                    <span>Hapus</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
         });
       } catch (err) {
-        appendTerminal(`[ERROR] Gagal memicu endpoint build: ${err.message}`, "text-rose-400");
+        console.error('Failed to load projects:', err);
       }
     }
 
-    // Initialize
-    loadStatus();
-    checkHealth();
-    setInterval(checkHealth, 15000);
+    async function toggleProjectMaintenance(id) {
+      try {
+        await fetch(`/api/projects/${id}/maintenance`, { method: 'POST' });
+        loadProjectsData();
+      } catch (e) {
+        alert('Gagal: ' + e.message);
+      }
+    }
+
+    async function deleteProject(id) {
+      if (!confirm('Yakin ingin menghapus proyek ini dari daftar panel?')) return;
+      try {
+        await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+        loadProjectsData();
+      } catch (e) {
+        alert('Gagal: ' + e.message);
+      }
+    }
+
+    function runProjectBuild(id) {
+      switchTab('commands');
+      const input = document.getElementById('terminalInput');
+      input.value = `cd ${id} && npm run build`;
+      runCustomCommand();
+    }
+
+    // Modal Add Project
+    function openAddProjectModal() { document.getElementById('addProjectModal').classList.remove('hidden'); }
+    function closeAddProjectModal() { document.getElementById('addProjectModal').classList.add('hidden'); }
+
+    async function submitNewProject(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('mProjName').value,
+        type: document.getElementById('mProjType').value,
+        dir: document.getElementById('mProjDir').value,
+        port: document.getElementById('mProjPort').value,
+        buildCommand: document.getElementById('mProjBuild').value,
+        startCommand: document.getElementById('mProjStart').value,
+        description: document.getElementById('mProjDesc').value
+      };
+
+      try {
+        const res = await fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          closeAddProjectModal();
+          loadProjectsData();
+        } else {
+          alert('Gagal menambah proyek.');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // 3. Storage & VPS Resources Loader
+    async function loadStorageData() {
+      try {
+        const res = await fetch('/api/vps/resources');
+        const data = await res.json();
+
+        // Disk
+        const disk = data.disk;
+        document.getElementById('diskPercentBadge').innerText = `${disk.usedPercent}% Terpakai`;
+        document.getElementById('diskUsageTitle').innerText = `${(disk.usedMB / 1024).toFixed(1)} GB / ${(disk.totalMB / 1024).toFixed(1)} GB`;
+        document.getElementById('diskProgressBar').style.width = `${disk.usedPercent}%`;
+        document.getElementById('diskFreeLabel').innerText = `${(disk.freeMB / 1024).toFixed(1)} GB`;
+        document.getElementById('diskUsedLabel').innerText = `${(disk.usedMB / 1024).toFixed(1)} GB`;
+
+        // RAM
+        const ram = data.memory;
+        document.getElementById('ramPercentBadge').innerText = `${ram.usedPercent}%`;
+        document.getElementById('ramUsageTitle').innerText = `${ram.usedMB} MB / ${ram.totalMB} MB`;
+        document.getElementById('ramProgressBar').style.width = `${ram.usedPercent}%`;
+        document.getElementById('ramFreeLabel').innerText = `${ram.freeMB} MB`;
+        document.getElementById('ramUsedLabel').innerText = `${ram.usedMB} MB`;
+        document.getElementById('ramHealthLabel').innerText = ram.usedPercent > 85 ? 'Peringatan Tinggi' : 'Optimal';
+
+        // CPU & System
+        const sys = data.system;
+        document.getElementById('cpuCoreBadge').innerText = `${sys.cpuCount} Cores`;
+        document.getElementById('cpuModelTitle').innerText = sys.cpuModel;
+        document.getElementById('cpuLoadLabel').innerText = sys.cpuLoad;
+        document.getElementById('uptimeLabel').innerText = `${Math.floor(sys.uptimeSeconds / 3600)} jam`;
+        document.getElementById('platformLabel').innerText = sys.platform;
+
+        // Table
+        const tbody = document.getElementById('projectStorageTableBody');
+        tbody.innerHTML = '';
+        data.projectSpaces.forEach(space => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="py-3 font-bold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm text-cyan-400">folder</span>
+                <span>${space.name}</span>
+              </td>
+              <td class="py-3 text-slate-400 font-mono">${space.dir}</td>
+              <td class="py-3 text-emerald-300 font-bold">${space.sizeMB} MB</td>
+              <td class="py-3 text-right text-slate-400 font-mono">${((space.sizeBytes / (disk.totalMB * 1024 * 1024)) * 100).toFixed(2)}%</td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error('Failed to load storage:', err);
+      }
+    }
+
+    async function cleanCache() {
+      if (!confirm('Bersihkan cache build lama dan file sementara VPS?')) return;
+      try {
+        const res = await fetch('/api/vps/cleanup', { method: 'POST' });
+        const data = await res.json();
+        alert(data.message || 'Pembersihan selesai.');
+        loadStorageData();
+      } catch (e) {
+        alert('Gagal membersihkan cache: ' + e.message);
+      }
+    }
+
+    // 4. Command Center & Terminal Streaming
+    function connectTerminalStream() {
+      const stream = new EventSource('/api/terminal/stream');
+      stream.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          if (msg.type === 'stdout') appendLog(msg.text, 'text-slate-300');
+          if (msg.type === 'stderr') appendLog(msg.text, 'text-amber-300');
+          if (msg.type === 'start') {
+            appendLog(`\n[${msg.timestamp}] $> ${msg.command}`, 'text-cyan-400 font-bold');
+            document.getElementById('terminalStatus').innerText = 'Sedang Berjalan...';
+          }
+          if (msg.type === 'done') {
+            appendLog(`[DONE] Perintah selesai dengan exit code ${msg.exitCode} (${(msg.durationMs/1000).toFixed(1)}s)\n`, msg.exitCode === 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold');
+            document.getElementById('terminalStatus').innerText = msg.exitCode === 0 ? 'Selesai (0)' : `Gagal (${msg.exitCode})`;
+            isCommandRunning = false;
+            document.getElementById('btnRunTerminal').disabled = false;
+            document.getElementById('btnRunTerminal').classList.remove('opacity-50');
+            clearInterval(cmdTimerInterval);
+          }
+        } catch {
+          appendLog(e.data);
+        }
+      };
+    }
+
+    function appendLog(text, color = 'text-slate-300') {
+      const screen = document.getElementById('terminalScreen');
+      const span = document.createElement('span');
+      span.className = `${color} block`;
+      span.textContent = text;
+      screen.appendChild(span);
+      if (document.getElementById('terminalAutoScroll').checked) {
+        screen.scrollTop = screen.scrollHeight;
+      }
+    }
+
+    function clearTerminalLogs() {
+      document.getElementById('terminalScreen').innerHTML = '<span class="text-slate-500">[SYSTEM] Terminal dibersihkan.</span>\n';
+    }
+
+    async function runCustomCommand(e) {
+      if (e) e.preventDefault();
+      if (isCommandRunning) return;
+      const cmd = document.getElementById('terminalInput').value.trim();
+      if (!cmd) return;
+
+      isCommandRunning = true;
+      const btn = document.getElementById('btnRunTerminal');
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      cmdStartTime = Date.now();
+      clearInterval(cmdTimerInterval);
+      cmdTimerInterval = setInterval(() => {
+        const elapsed = ((Date.now() - cmdStartTime) / 1000).toFixed(1);
+        document.getElementById('terminalDuration').innerText = `${elapsed}s`;
+      }, 100);
+
+      try {
+        await fetch('/api/commands/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: cmd })
+        });
+      } catch (err) {
+        appendLog(`[ERROR] Gagal mengirim perintah: ${err.message}`, 'text-rose-400');
+        isCommandRunning = false;
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+        clearInterval(cmdTimerInterval);
+      }
+    }
+
+    async function loadCommandsData() {
+      try {
+        const res = await fetch('/api/commands');
+        const commands = await res.json();
+        const grid = document.getElementById('commandsGrid');
+        grid.innerHTML = '';
+
+        commands.forEach(c => {
+          grid.innerHTML += `
+            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/40 transition flex flex-col justify-between space-y-3">
+              <div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-cyan-300">${c.category}</span>
+                  <button onclick="deleteCommand('${c.id}')" class="text-slate-500 hover:text-rose-400 transition">
+                    <span class="material-symbols-outlined text-sm">delete</span>
+                  </button>
+                </div>
+                <h4 class="font-bold text-sm text-white mt-1.5">${c.name}</h4>
+                <p class="text-xs text-slate-400 mt-1 line-clamp-2">${c.description}</p>
+                <div class="mt-2.5 p-2 bg-black/60 rounded border border-slate-800 font-mono text-[11px] text-cyan-400 truncate">
+                  ${c.command}
+                </div>
+              </div>
+
+              <button 
+                onclick="executePresetCommand('${c.id}', \`${c.command.replace(/`/g, '\\`')}\`)"
+                class="w-full py-2 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-slate-950 text-slate-200 text-xs font-mono font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span class="material-symbols-outlined text-sm">play_arrow</span>
+                <span>Jalankan Sekarang</span>
+              </button>
+            </div>
+          `;
+        });
+      } catch (err) {
+        console.error('Failed to load commands:', err);
+      }
+    }
+
+    function executePresetCommand(id, cmd) {
+      document.getElementById('terminalInput').value = cmd;
+      runCustomCommand();
+    }
+
+    async function deleteCommand(id) {
+      if (!confirm('Hapus perintah ini?')) return;
+      try {
+        await fetch(`/api/commands/${id}`, { method: 'DELETE' });
+        loadCommandsData();
+      } catch (e) {
+        alert('Gagal: ' + e.message);
+      }
+    }
+
+    // Modal Import Command
+    function openImportCommandModal() { document.getElementById('importCommandModal').classList.remove('hidden'); }
+    function closeImportCommandModal() { document.getElementById('importCommandModal').classList.add('hidden'); }
+
+    async function submitImportedCommand(e) {
+      e.preventDefault();
+      const body = {
+        name: document.getElementById('mCmdName').value,
+        command: document.getElementById('mCmdScript').value,
+        description: document.getElementById('mCmdDesc').value,
+        category: 'custom'
+      };
+
+      try {
+        const res = await fetch('/api/commands/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok) {
+          closeImportCommandModal();
+          loadCommandsData();
+        } else {
+          alert('Gagal menyimpan perintah.');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    }
+
+    // 5. Change Password
+    async function changePassword(e) {
+      e.preventDefault();
+      const alertEl = document.getElementById('pwdAlert');
+      const body = {
+        currentPassword: document.getElementById('currentPwd').value,
+        newUsername: document.getElementById('newUsername').value,
+        newPassword: document.getElementById('newPwd').value
+      };
+
+      try {
+        const res = await fetch('/api/auth/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alertEl.className = 'p-3.5 rounded-xl text-xs font-mono bg-emerald-950 text-emerald-300 border border-emerald-500/40 block';
+          alertEl.innerText = data.message;
+        } else {
+          alertEl.className = 'p-3.5 rounded-xl text-xs font-mono bg-rose-950 text-rose-300 border border-rose-500/40 block';
+          alertEl.innerText = data.error || 'Gagal mengubah password.';
+        }
+      } catch (err) {
+        alertEl.className = 'p-3.5 rounded-xl text-xs font-mono bg-rose-950 text-rose-300 border border-rose-500/40 block';
+        alertEl.innerText = 'Error: ' + err.message;
+      }
+    }
+
+    // Initialize App
+    checkAuth();
+    loadOverviewData();
+    connectTerminalStream();
   </script>
 </body>
 </html>
