@@ -246,7 +246,7 @@ app.get('/api/projects', requireAuth, async (req, res) => {
 
 // POST /api/projects - Add a new project
 app.post('/api/projects', requireAuth, (req, res) => {
-  const { name, dir, port, type, startCommand, buildCommand, description, deployStatus } = req.body;
+  const { name, dir, port, type, startCommand, buildCommand, description, deployStatus, domain } = req.body;
   if (!name || !dir) {
     return res.status(400).json({ error: 'Nama dan direktori proyek wajib diisi.' });
   }
@@ -265,6 +265,7 @@ app.post('/api/projects', requireAuth, (req, res) => {
     startCommand: startCommand || 'npm start',
     deployStatus: VALID_STATUSES.includes(deployStatus) ? deployStatus : 'production',
     description: description || 'Proyek yang dikelola di VPS.',
+    domain: domain || '',
     isDefault: false
   };
 
@@ -531,31 +532,37 @@ app.post('/api/commands/run', requireAuth, (req, res) => {
 // ==========================================
 // 4. GATEWAY ROUTER — Per-Project Status Routing
 // ==========================================
-//
-// Logic:
-//   • production → proxy to project's port
-//   • maintenance → serve Sameko Saba maintenance.html
-//   • build → serve building.html ("Sedang Build")
-//   • Query ?bypass=admin bypasses all status checks (admin preview)
-//
-// The "default" project (isDefault: true) handles all incoming traffic.
-// If no project is marked default, falls back to first project with a port.
-//
+
+// Proxy & Static Caches
+const staticCache = {};
+function getOrCreateStatic(dir) {
+  if (!staticCache[dir]) {
+    staticCache[dir] = express.static(dir);
+  }
+  return staticCache[dir];
+}
+
 app.use((req, res, next) => {
   // Skip internal panel routes
   const panelRoutes = ['/admin', '/login', '/api/', '/preview/', '/_next/', '/stickers/', '/favicon'];
   if (panelRoutes.some(r => req.path.startsWith(r))) return next();
 
-  // Admin bypass — skip all status checks
+  // Admin bypass
   const isBypass = req.query.bypass === 'admin';
   if (isBypass) return next();
 
   const projects = readJsonFile(PROJECTS_PATH, []);
 
-  // Find the default gateway project
-  const defaultProject = projects.find(p => p.isDefault) || projects.find(p => p.port) || null;
+  // 1. Find target project by Domain (Host header)
+  const host = req.hostname || '';
+  let targetProject = projects.find(p => p.domain && p.domain === host);
 
-  if (!defaultProject) {
+  // 2. Fallback to default project if no domain matches
+  if (!targetProject) {
+    targetProject = projects.find(p => p.isDefault) || projects.find(p => p.port) || null;
+  }
+
+  if (!targetProject) {
     return res.status(503).send(`
       <!DOCTYPE html>
       <html lang="id">
@@ -572,22 +579,31 @@ app.use((req, res, next) => {
     `);
   }
 
-  const deployStatus = defaultProject.deployStatus || 'production';
+  const deployStatus = targetProject.deployStatus || 'production';
 
   if (deployStatus === 'maintenance') {
-    console.log(`[GATEWAY] Project "${defaultProject.name}" → MAINTENANCE`);
+    console.log(`[GATEWAY] [${host}] → Project "${targetProject.name}" → MAINTENANCE`);
     return res.sendFile(path.join(__dirname, 'public', 'maintenance.html'));
   }
 
   if (deployStatus === 'build') {
-    console.log(`[GATEWAY] Project "${defaultProject.name}" → BUILD`);
+    console.log(`[GATEWAY] [${host}] → Project "${targetProject.name}" → BUILD`);
     return res.sendFile(path.join(__dirname, 'public', 'building.html'));
   }
 
-  // production → proxy to project port
-  if (defaultProject.port) {
-    console.log(`[GATEWAY] Project "${defaultProject.name}" → PROXY :${defaultProject.port}`);
-    return getOrCreateProxy(defaultProject.port)(req, res, next);
+  // production → proxy to port OR serve static HTML
+  if (targetProject.type === 'Static HTML' || targetProject.port === 80 || !targetProject.port) {
+    const pPath = path.isAbsolute(targetProject.dir) ? targetProject.dir : path.join(WORKSPACE_DIR, targetProject.dir);
+    console.log(`[GATEWAY] [${host}] → Project "${targetProject.name}" → STATIC (${pPath})`);
+    return getOrCreateStatic(pPath)(req, res, () => {
+      // If static file not found, fallback to index.html (SPA)
+      res.sendFile(path.join(pPath, 'index.html'));
+    });
+  }
+
+  if (targetProject.port) {
+    console.log(`[GATEWAY] [${host}] → Project "${targetProject.name}" → PROXY :${targetProject.port}`);
+    return getOrCreateProxy(targetProject.port)(req, res, next);
   }
 
   next();

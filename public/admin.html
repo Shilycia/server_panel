@@ -617,6 +617,11 @@
         </div>
 
         <div>
+          <label class="block text-slate-300 uppercase mb-1">Domain Route</label>
+          <input type="text" id="mProjDomain" placeholder="nadyakhiarapurnomo.my.id" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div>
           <label class="block text-slate-300 uppercase mb-1">Perintah Build</label>
           <input type="text" id="mProjBuild" placeholder="npm run build" class="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-slate-100 outline-none focus:border-cyan-400" />
         </div>
@@ -898,6 +903,7 @@
                 <div class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/80 font-mono text-[11px] text-slate-400 space-y-1">
                   <div class="flex justify-between"><span>Direktori:</span> <strong class="text-slate-200 truncate ml-2">${p.dir}</strong></div>
                   <div class="flex justify-between"><span>Port HTTP:</span> <strong class="text-cyan-300">${p.port || 'Static'}</strong></div>
+                  <div class="flex justify-between"><span>Domain:</span> <strong class="text-purple-300">${p.domain || 'Semua (Default)'}</strong></div>
                   <div class="flex justify-between"><span>Ukuran Ruang:</span> <strong class="text-emerald-400">${p.sizeMB} MB</strong></div>
                 </div>
               </div>
@@ -1025,6 +1031,7 @@
         type: document.getElementById('mProjType').value,
         dir: document.getElementById('mProjDir').value,
         port: document.getElementById('mProjPort').value,
+        domain: document.getElementById('mProjDomain').value,
         buildCommand: document.getElementById('mProjBuild').value,
         startCommand: document.getElementById('mProjStart').value,
         description: document.getElementById('mProjDesc').value

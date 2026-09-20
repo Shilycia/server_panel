@@ -10,7 +10,8 @@
     "startCommand": "npm run start",
     "deployStatus": "production",
     "description": "Website portofolio kreatif utama (Next.js 16 Turbopack).",
-    "isDefault": true
+    "isDefault": true,
+    "domain": "nadyakhiarapurnomo.my.id"
   },
   {
     "id": "portfolio-api",
@@ -36,6 +37,7 @@
     "startCommand": "echo \"Served by Nginx\"",
     "deployStatus": "production",
     "description": "Portal profil resmi shilycia's DEV (Bintang Putra Adryan).",
-    "isDefault": false
+    "isDefault": false,
+    "domain": "43.173.33.116"
   }
 ]
