@@ -8,9 +8,9 @@
     "pm2Name": "portfolio-web",
     "buildCommand": "npm run build",
     "startCommand": "npm run start",
-    "maintenance": true,
+    "deployStatus": "production",
     "description": "Website portofolio kreatif utama (Next.js 16 Turbopack).",
-    "status": "online"
+    "isDefault": true
   },
   {
     "id": "portfolio-api",
@@ -21,9 +21,9 @@
     "pm2Name": "portfolio-api",
     "buildCommand": "npm run build",
     "startCommand": "node dist/main.js",
-    "maintenance": false,
+    "deployStatus": "production",
     "description": "Backend API & database portofolio dengan NestJS & Prisma.",
-    "status": "offline"
+    "isDefault": false
   },
   {
     "id": "landing",
@@ -34,8 +34,8 @@
     "pm2Name": "landing-portal",
     "buildCommand": "echo \"No build required\"",
     "startCommand": "echo \"Served by Nginx\"",
-    "maintenance": false,
+    "deployStatus": "production",
     "description": "Portal profil resmi shilycia's DEV (Bintang Putra Adryan).",
-    "status": "online"
+    "isDefault": false
   }
 ]

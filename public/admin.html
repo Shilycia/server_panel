@@ -149,34 +149,40 @@
       <!-- Top Cards -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Master Maintenance Switch -->
+        <!-- Gateway Status Card (per-project deployStatus) -->
         <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between">
           <div class="flex items-start justify-between">
             <div>
               <div class="flex items-center gap-1.5 text-xs uppercase font-mono text-slate-400 mb-1">
                 <span class="material-symbols-outlined text-sm text-cyan-400">traffic</span>
-                <span>Gateway Status</span>
+                <span>Gateway Default</span>
               </div>
-              <h2 class="text-xl font-bold text-white">Sameko Saba Maintenance</h2>
+              <h2 class="text-xl font-bold text-white" id="gatewayProjectName">Memuat...</h2>
             </div>
-            <span id="gatewayStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+            <span id="gatewayStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-slate-800 text-slate-400 border border-slate-700 flex items-center gap-1.5">
               <span>MEMUAT...</span>
             </span>
           </div>
 
           <p class="text-xs text-slate-400 mt-3 leading-relaxed">
-            Mengarahkan seluruh lalu lintas publik (<code class="text-cyan-300">/</code>) ke halaman Sameko Saba Beach. Pengunjung tidak dapat mengakses portofolio kecuali menggunakan bypass.
+            Status proyek ini menentukan apa yang dilihat pengunjung di halaman utama. Atur status lewat tab <strong class="text-slate-200">Proyek</strong>.
           </p>
 
-          <div class="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-xs font-mono text-slate-300">Status Gerbang:</span>
-            <button 
-              id="btnMasterMaintenance" 
-              onclick="toggleGlobalMaintenance()" 
-              class="px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg"
-            >
-              <span class="material-symbols-outlined text-base">sync</span>
-              <span>Ubah Status</span>
+          <div class="mt-4 grid grid-cols-3 gap-2 font-mono text-[11px]">
+            <button onclick="setDefaultProjectStatus('production')" id="gwBtnProd"
+              class="py-2 rounded-xl font-bold transition border flex flex-col items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-base">public</span>
+              <span>Production</span>
+            </button>
+            <button onclick="setDefaultProjectStatus('maintenance')" id="gwBtnMaint"
+              class="py-2 rounded-xl font-bold transition border flex flex-col items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-base">beach_access</span>
+              <span>Maintenance</span>
+            </button>
+            <button onclick="setDefaultProjectStatus('build')" id="gwBtnBuild"
+              class="py-2 rounded-xl font-bold transition border flex flex-col items-center gap-1 cursor-pointer">
+              <span class="material-symbols-outlined text-base">construction</span>
+              <span>Build</span>
             </button>
           </div>
         </div>
@@ -226,15 +232,15 @@
               <span>Pengunjung (/)</span>
               <span class="text-cyan-400">&rarr; Gateway &rarr;</span>
             </div>
-            <div id="routingDestDisplay" class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2">
-              <span class="material-symbols-outlined text-base">beach_access</span>
-              <span id="routingDestTitle">Sameko Saba Maintenance</span>
+            <div id="routingDestDisplay" class="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-semibold flex items-center gap-2">
+              <span class="material-symbols-outlined text-base" id="routingDestIcon">cached</span>
+              <span id="routingDestTitle">Memuat status...</span>
             </div>
           </div>
 
           <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono text-slate-400">
-            <span>Bypass Admin: <code class="text-cyan-300">?bypass=true</code></span>
-            <a href="/?bypass=true" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
+            <span>Bypass Admin: <code class="text-cyan-300">?bypass=admin</code></span>
+            <a href="/?bypass=admin" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-1">
               <span>Bypass Sekarang</span>
               <span class="material-symbols-outlined text-xs">arrow_outward</span>
             </a>
@@ -732,55 +738,98 @@
     // 1. Overview Loader
     async function loadOverviewData() {
       try {
-        const [statusRes, projRes] = await Promise.all([
-          fetch('/api/status'),
-          fetch('/api/projects')
-        ]);
-        const status = await statusRes.json();
-        const projects = await projRes.json();
+        const res = await fetch('/api/projects');
+        const projects = await res.json();
 
-        // Update Gateway Badge
+        // Find default project
+        const defaultProject = projects.find(p => p.isDefault) || projects[0] || null;
+        const ds = defaultProject ? (defaultProject.deployStatus || 'production') : 'production';
+
+        // Update Gateway Status Badge
         const gBadge = document.getElementById('gatewayStatusBadge');
-        const btnM = document.getElementById('btnMasterMaintenance');
+        const gwName = document.getElementById('gatewayProjectName');
         const destTitle = document.getElementById('routingDestTitle');
+        const destIcon = document.getElementById('routingDestIcon');
         const destBox = document.getElementById('routingDestDisplay');
 
-        if (status.maintenance) {
-          gBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5';
-          gBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>AKTIF (Maintenance)</span>';
-          btnM.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-emerald-600 hover:bg-emerald-500 text-white';
-          btnM.innerHTML = '<span class="material-symbols-outlined text-base">power_settings_new</span><span>Matikan Maintenance</span>';
+        if (gwName && defaultProject) gwName.innerText = defaultProject.name;
 
-          destBox.className = 'p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2';
-          destTitle.innerText = 'Sameko Saba Maintenance Page (Lokal)';
-        } else {
-          gBadge.className = 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5';
-          gBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>NONAKTIF (Normal)</span>';
-          btnM.className = 'px-4 py-2 rounded-xl text-xs font-mono font-bold transition flex items-center gap-2 cursor-pointer shadow-lg bg-amber-600 hover:bg-amber-500 text-white';
-          btnM.innerHTML = '<span class="material-symbols-outlined text-base">construction</span><span>Aktifkan Maintenance</span>';
+        const statusMap = {
+          production: {
+            badge: 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5',
+            badgeHTML: '<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span>PRODUCTION</span>',
+            dest: 'p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center gap-2',
+            destTitle: `Proxy ke Port ${defaultProject?.port || 3000} → ${defaultProject?.name || 'Portfolio Web'}`,
+            destIcon: 'public',
+            btnProd: 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-500',
+            btnMaint: 'bg-slate-800 text-slate-400 border-slate-700 hover:text-amber-300',
+            btnBuild: 'bg-slate-800 text-slate-400 border-slate-700 hover:text-blue-300',
+          },
+          maintenance: {
+            badge: 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5',
+            badgeHTML: '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>MAINTENANCE</span>',
+            dest: 'p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 font-semibold flex items-center gap-2',
+            destTitle: 'Sameko Saba Maintenance Page',
+            destIcon: 'beach_access',
+            btnProd: 'bg-slate-800 text-slate-400 border-slate-700 hover:text-emerald-300',
+            btnMaint: 'bg-amber-600 hover:bg-amber-500 text-white border-amber-500',
+            btnBuild: 'bg-slate-800 text-slate-400 border-slate-700 hover:text-blue-300',
+          },
+          build: {
+            badge: 'px-2.5 py-1 rounded-full text-xs font-mono font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 flex items-center gap-1.5',
+            badgeHTML: '<span class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span><span>BUILD</span>',
+            dest: 'p-2 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-300 font-semibold flex items-center gap-2',
+            destTitle: 'Halaman Sedang Build (building.html)',
+            destIcon: 'construction',
+            btnProd: 'bg-slate-800 text-slate-400 border-slate-700 hover:text-emerald-300',
+            btnMaint: 'bg-slate-800 text-slate-400 border-slate-700 hover:text-amber-300',
+            btnBuild: 'bg-blue-700 hover:bg-blue-600 text-white border-blue-500',
+          }
+        };
 
-          destBox.className = 'p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold flex items-center gap-2';
-          destTitle.innerText = 'Portfolio Web Utama (Proxy ke :3000)';
-        }
+        const sm = statusMap[ds] || statusMap.production;
+        if (gBadge) { gBadge.className = sm.badge; gBadge.innerHTML = sm.badgeHTML; }
+        if (destBox) destBox.className = sm.dest;
+        if (destTitle) destTitle.innerText = sm.destTitle;
+        if (destIcon) destIcon.innerText = sm.destIcon;
+
+        // Update the 3 gateway buttons' active state
+        const btnIds = { production: 'gwBtnProd', maintenance: 'gwBtnMaint', build: 'gwBtnBuild' };
+        Object.entries(btnIds).forEach(([key, btnId]) => {
+          const btn = document.getElementById(btnId);
+          if (!btn) return;
+          const isActive = (key === ds);
+          btn.className = btn.className.replace(/\bbg-\S+\b|\btext-\S+\b|\bborder-\S+\b/g, '').trim();
+          btn.className = `py-2 rounded-xl font-bold transition border flex flex-col items-center gap-1 cursor-pointer ${sm[`btn${key.charAt(0).toUpperCase()+key.slice(1)}`]}`;
+        });
 
         // Render Service Pills in Overview
         const grid = document.getElementById('overviewProjectGrid');
-        grid.innerHTML = '';
-        projects.forEach(p => {
-          const isOnline = p.online;
-          grid.innerHTML += `
-            <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
-              <div>
-                <div class="text-slate-400 text-[11px]">${p.type}</div>
-                <div class="font-bold text-slate-200 mt-0.5">${p.name}</div>
-                <div class="text-[10px] text-slate-500 mt-1">Port: ${p.port || 'N/A'} • ${p.sizeMB} MB</div>
+        if (grid) {
+          grid.innerHTML = '';
+          projects.forEach(p => {
+            const isOnline = p.online;
+            const pDs = p.deployStatus || 'production';
+            const dsColors = { production: 'bg-emerald-950 text-emerald-300', maintenance: 'bg-amber-500/20 text-amber-300', build: 'bg-blue-950 text-blue-300' };
+            grid.innerHTML += `
+              <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div class="text-slate-400 text-[11px]">${p.type}</div>
+                  <div class="font-bold text-slate-200 mt-0.5">${p.name}${p.isDefault ? ' <span class="text-[10px] text-cyan-400 font-mono ml-1">★</span>' : ''}</div>
+                  <div class="text-[10px] text-slate-500 mt-1">Port: ${p.port || 'N/A'} • ${p.sizeMB} MB</div>
+                </div>
+                <div class="flex flex-col items-end gap-1.5">
+                  <span class="px-2 py-1 rounded text-[11px] font-bold ${isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-rose-950 text-rose-300 border border-rose-500/30'}">
+                    ${isOnline ? 'ONLINE' : 'OFFLINE'}
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[10px] font-bold font-mono ${dsColors[pDs]}">
+                    ${pDs.toUpperCase()}
+                  </span>
+                </div>
               </div>
-              <span class="px-2 py-1 rounded text-[11px] font-bold ${isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-rose-950 text-rose-300 border border-rose-500/30'}">
-                ${isOnline ? 'ONLINE' : 'OFFLINE'}
-              </span>
-            </div>
-          `;
-        });
+            `;
+          });
+        }
 
         document.getElementById('navProjectCount').innerText = projects.length;
       } catch (err) {
@@ -788,13 +837,22 @@
       }
     }
 
-    // Toggle Global Maintenance
-    async function toggleGlobalMaintenance() {
+    // Set default project's status from gateway card
+    async function setDefaultProjectStatus(status) {
       try {
-        await fetch('/api/maintenance/toggle', { method: 'POST' });
+        const res = await fetch('/api/projects');
+        const projects = await res.json();
+        const defaultProject = projects.find(p => p.isDefault) || projects[0];
+        if (!defaultProject) return alert('Tidak ada proyek terdaftar.');
+
+        await fetch(`/api/projects/${defaultProject.id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
         loadOverviewData();
       } catch (e) {
-        alert('Gagal mengubah maintenance: ' + e.message);
+        alert('Gagal: ' + e.message);
       }
     }
 
@@ -808,14 +866,26 @@
 
         projects.forEach(p => {
           const isOnline = p.online;
-          const isMaint = p.maintenance;
+          const ds = p.deployStatus || 'production';
+          const isDefault = p.isDefault;
+
+          const statusColors = {
+            production: 'bg-emerald-950 text-emerald-300 border-emerald-500/30',
+            maintenance: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+            build: 'bg-blue-950 text-blue-300 border-blue-500/30'
+          };
+          const statusLabels = { production: 'PRODUCTION', maintenance: 'MAINTENANCE', build: 'BUILD' };
+          const statusIcons  = { production: 'public', maintenance: 'beach_access', build: 'construction' };
 
           container.innerHTML += `
-            <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-6 shadow-xl flex flex-col justify-between space-y-4">
+            <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border ${isDefault ? 'border-cyan-500/60' : 'border-slate-800'} p-6 shadow-xl flex flex-col justify-between space-y-4">
               <div>
                 <div class="flex items-start justify-between">
                   <div>
-                    <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${p.type}</span>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${p.type}</span>
+                      ${isDefault ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40">DEFAULT</span>' : ''}
+                    </div>
                     <h3 class="text-lg font-bold text-white mt-1.5">${p.name}</h3>
                   </div>
                   <span class="px-2 py-1 rounded text-[11px] font-mono font-bold ${isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">
@@ -832,26 +902,54 @@
                 </div>
               </div>
 
-              <div class="space-y-2 pt-3 border-t border-slate-800/80 font-mono text-xs">
-                <!-- Maintenance Switch per project -->
+              <div class="space-y-3 pt-3 border-t border-slate-800/80 font-mono text-xs">
+                <!-- Deploy Status Badge -->
                 <div class="flex items-center justify-between">
-                  <span class="text-slate-400">Sameko Saba Mode:</span>
-                  <button 
-                    onclick="toggleProjectMaintenance('${p.id}')"
-                    class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${isMaint ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-slate-800 text-slate-400'}"
-                  >
-                    ${isMaint ? 'AKTIF' : 'NONAKTIF'}
+                  <span class="text-slate-400">Deploy Status:</span>
+                  <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 ${statusColors[ds]}">
+                    <span class="material-symbols-outlined text-sm">${statusIcons[ds]}</span>
+                    ${statusLabels[ds]}
+                  </span>
+                </div>
+
+                <!-- 3-State Status Selector -->
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button onclick="setProjectStatus('${p.id}', 'production')"
+                    class="py-1.5 rounded-lg text-[10px] font-bold transition border cursor-pointer flex flex-col items-center gap-0.5
+                      ${ds === 'production' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-emerald-500/30 hover:text-emerald-400'}">
+                    <span class="material-symbols-outlined text-sm">public</span>
+                    <span>Prod</span>
+                  </button>
+                  <button onclick="setProjectStatus('${p.id}', 'maintenance')"
+                    class="py-1.5 rounded-lg text-[10px] font-bold transition border cursor-pointer flex flex-col items-center gap-0.5
+                      ${ds === 'maintenance' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-amber-500/30 hover:text-amber-400'}">
+                    <span class="material-symbols-outlined text-sm">beach_access</span>
+                    <span>Maint</span>
+                  </button>
+                  <button onclick="setProjectStatus('${p.id}', 'build')"
+                    class="py-1.5 rounded-lg text-[10px] font-bold transition border cursor-pointer flex flex-col items-center gap-0.5
+                      ${ds === 'build' ? 'bg-blue-950 text-blue-300 border-blue-500/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-blue-500/30 hover:text-blue-400'}">
+                    <span class="material-symbols-outlined text-sm">construction</span>
+                    <span>Build</span>
                   </button>
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="grid grid-cols-2 gap-2 pt-1">
+                <div class="grid grid-cols-3 gap-2 pt-1">
                   <button 
                     onclick="runProjectBuild('${p.id}')"
                     class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
                   >
                     <span class="material-symbols-outlined text-sm text-cyan-400">build</span>
                     <span>Build</span>
+                  </button>
+                  <button 
+                    onclick="setAsDefault('${p.id}')"
+                    class="py-2 px-3 rounded-xl ${isDefault ? 'bg-cyan-950 border-cyan-500/40 text-cyan-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30'} font-bold transition flex items-center justify-center gap-1 border cursor-pointer"
+                    title="Jadikan proyek ini sebagai target gateway default"
+                  >
+                    <span class="material-symbols-outlined text-sm">star</span>
+                    <span>${isDefault ? 'Default' : 'Set'}</span>
                   </button>
                   <button 
                     onclick="deleteProject('${p.id}')"
@@ -870,10 +968,30 @@
       }
     }
 
-    async function toggleProjectMaintenance(id) {
+    async function setProjectStatus(id, status) {
       try {
-        await fetch(`/api/projects/${id}/maintenance`, { method: 'POST' });
+        const res = await fetch(`/api/projects/${id}/status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          loadProjectsData();
+          loadOverviewData(); // Refresh gateway status card too
+        } else {
+          alert('Gagal mengubah status: ' + (data.error || 'Unknown error'));
+        }
+      } catch (e) {
+        alert('Gagal: ' + e.message);
+      }
+    }
+
+    async function setAsDefault(id) {
+      try {
+        await fetch(`/api/projects/${id}/set-default`, { method: 'POST' });
         loadProjectsData();
+        loadOverviewData();
       } catch (e) {
         alert('Gagal: ' + e.message);
       }
