@@ -544,7 +544,7 @@ function getOrCreateStatic(dir) {
 
 app.use((req, res, next) => {
   // Skip internal panel routes
-  const panelRoutes = ['/admin', '/login', '/api/', '/preview/', '/_next/', '/stickers/', '/favicon'];
+  const panelRoutes = ['/admin', '/login', '/api/projects', '/api/vps', '/api/auth', '/api/terminal', '/preview/', '/stickers/', '/favicon', '/saba-'];
   if (panelRoutes.some(r => req.path.startsWith(r))) return next();
 
   // Admin bypass
