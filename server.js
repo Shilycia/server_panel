@@ -174,7 +174,14 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
   const authConfig = readJsonFile(AUTH_PATH, { username: 'admin', password: 'shilyciaDEV2026!' });
 
   // Hash plaintext password if not hashed yet
-  if (!authConfig.password.startsWith('$2b
+  if (!authConfig.password.startsWith('$2b$')) {
+    authConfig.password = bcrypt.hashSync(authConfig.password, 10);
+    writeJsonFile(AUTH_PATH, authConfig);
+  }
+
+  const isMatch = bcrypt.compareSync(password, authConfig.password);
+  if (username === authConfig.username && isMatch) {
+    const sessionToken = crypto.randomBytes(32).toString('hex');
     activeSessions.add(sessionToken);
 
     res.cookie('shilycia_session', sessionToken, {
