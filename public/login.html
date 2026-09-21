@@ -8,7 +8,7 @@
   <!-- Fonts & Google Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -19,6 +19,13 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              cyan: '#06b6d4',
+              sky: '#38bdf8',
+              navy: '#030712',
+            }
           }
         }
       }
@@ -26,6 +33,7 @@
   </script>
 
   <style>
+    /* Material Symbols setup */
     .material-symbols-outlined {
       font-family: 'Material Symbols Outlined', sans-serif;
       font-weight: normal;
@@ -37,15 +45,204 @@
       vertical-align: middle;
       -webkit-font-smoothing: antialiased;
     }
+
+    /* Hide OS cursor when custom Saba cursor is active */
+    @media (pointer: fine) {
+      body.saba-cursor-active,
+      body.saba-cursor-active * {
+        cursor: none !important;
+      }
+    }
+
+    /* Wave and Water Keyframes */
+    @keyframes waveEbb {
+      0%, 100% {
+        transform: translateY(0px) scaleY(1);
+        opacity: 0.85;
+      }
+      50% {
+        transform: translateY(-24px) scaleY(1.04);
+        opacity: 1;
+      }
+    }
+
+    @keyframes waveSecondary {
+      0%, 100% {
+        transform: translateY(0px) scaleY(0.98);
+        opacity: 0.55;
+      }
+      50% {
+        transform: translateY(-34px) scaleY(1.06);
+        opacity: 0.8;
+      }
+    }
+
+    @keyframes foamPulse {
+      0%, 100% {
+        stroke-width: 4px;
+        opacity: 0.7;
+      }
+      50% {
+        stroke-width: 7px;
+        opacity: 1;
+      }
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(3deg); }
+    }
+
+    @keyframes crabScuttle {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      25% { transform: translateY(-4px) rotate(-6deg); }
+      75% { transform: translateY(-2px) rotate(6deg); }
+    }
+
+    @keyframes waterGlimmer {
+      0%, 100% { opacity: 0.25; }
+      50% { opacity: 0.5; }
+    }
+
+    @keyframes bubbleFloatUp {
+      0% {
+        transform: translateY(0) scale(0.6);
+        opacity: 0;
+      }
+      20% {
+        opacity: 0.65;
+      }
+      80% {
+        opacity: 0.65;
+      }
+      100% {
+        transform: translateY(-120vh) scale(1.1);
+        opacity: 0;
+      }
+    }
+
+    .animate-wave-ebb {
+      animation: waveEbb 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .animate-wave-secondary {
+      animation: waveSecondary 8.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    .animate-foam-pulse {
+      animation: foamPulse 3.5s ease-in-out infinite;
+    }
+    .animate-float-slow {
+      animation: floatSlow 5s ease-in-out infinite;
+    }
+    .animate-crab-scuttle {
+      animation: crabScuttle 3s ease-in-out infinite;
+    }
+    .animate-water-glimmer {
+      animation: waterGlimmer 4s ease-in-out infinite;
+    }
+    .backdrop-blur-xs {
+      backdrop-filter: blur(2px);
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-6 selection:bg-cyan-500 selection:text-black relative overflow-hidden font-sans">
+<body class="relative min-h-screen w-full overflow-x-hidden bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-cyan-500 selection:text-black">
 
-  <!-- Ambient Glow Background -->
-  <div class="fixed top-1/4 left-1/3 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none"></div>
-  <div class="fixed bottom-1/4 right-1/3 w-[450px] h-[450px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+  <!-- =========================================
+       CUSTOM SAMEKO SABA NAUTICAL CURSOR & TRAIL
+       ========================================= -->
+  <div id="cursorTrailContainer"></div>
+  <div id="rippleContainer"></div>
 
-  <!-- Login Card -->
+  <div id="sabaCursor" class="fixed pointer-events-none z-[9999] opacity-0 transition-opacity duration-200" style="transform: translate3d(0, 0, 0); will-change: transform, left, top;">
+    <div id="cursorBody" class="relative -ml-2 -mt-2 transition-transform duration-200 ease-out">
+      <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg" class="filter drop-shadow-[0_2px_8px_rgba(6,182,212,0.85)]">
+        <path d="M3 3 L15 28 L19 18 L29 14 Z" fill="#ffffff" />
+        <path d="M5 6 L14 24 L17 16 L25 13 Z" fill="url(#cursorGrad)" />
+        <polygon points="14,12 18,12 16,8" fill="#fde047" stroke="#ca8a04" stroke-width="0.8" />
+        <circle cx="16" cy="14" r="1.8" fill="#ffffff" />
+        <defs>
+          <linearGradient id="cursorGrad" x1="5" y1="6" x2="25" y2="24" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#38bdf8" />
+            <stop offset="50%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="#0284c7" />
+          </linearGradient>
+        </defs>
+      </svg>
+      <div id="cursorSparkle" class="absolute -top-3 -right-2 text-amber-300 select-none hidden animate-bounce">
+        <span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================
+       ANIMATED BEACH BACKGROUND WITH PARALLAX
+       ========================================= -->
+  <div class="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+    <!-- Layer 1: Base Beach Canvas -->
+    <div 
+      id="bgCanvas"
+      class="absolute -inset-10 bg-cover bg-bottom md:bg-center transition-transform duration-300 ease-out"
+      style="background-image: url('/saba-beach-bg.png'); transform: scale(1.08);"
+    ></div>
+
+    <!-- Ambient Darkening Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-slate-950/45 via-slate-950/35 to-slate-950/80 backdrop-blur-[0.5px]"></div>
+
+    <!-- Layer 2: Animated Shoreline Waves -->
+    <div id="waveLayer" class="absolute inset-x-0 bottom-0 top-0 pointer-events-none transition-transform duration-300 ease-out">
+      <!-- Primary Wave: Translucent Turquoise Water Tide + Glowing Foam Line -->
+      <div class="absolute inset-0 animate-wave-ebb">
+        <svg viewBox="0 0 1024 575" preserveAspectRatio="none" class="w-full h-full">
+          <defs>
+            <filter id="foamGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="5" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          <path d="M 0,386 C 80,335 120,318 160,318 C 240,318 280,355 360,362 C 460,370 600,385 680,390 C 740,395 780,432 840,429 C 880,425 920,345 960,332 L 1024,328 L 1024,575 L 0,575 Z" fill="rgba(34, 211, 238, 0.22)" />
+          <path d="M 0,386 C 80,335 120,318 160,318 C 240,318 280,355 360,362 C 460,370 600,385 680,390 C 740,395 780,432 840,429 C 880,425 920,345 960,332 L 1024,328" fill="none" stroke="rgba(255, 255, 255, 0.95)" stroke-width="5" stroke-linecap="round" filter="url(#foamGlow)" class="animate-foam-pulse" />
+          <path d="M 0,388 C 80,337 120,320 160,320 C 240,320 280,357 360,364 C 460,372 600,387 680,392 C 740,397 780,434 840,431 C 880,427 920,347 960,334 L 1024,330" fill="none" stroke="rgba(56, 189, 248, 0.55)" stroke-width="10" stroke-linecap="round" opacity="0.6" />
+        </svg>
+      </div>
+
+      <!-- Secondary Wave (Delayed Phase) -->
+      <div class="absolute inset-0 animate-wave-secondary" style="animation-delay: -3.5s;">
+        <svg viewBox="0 0 1024 575" preserveAspectRatio="none" class="w-full h-full opacity-60">
+          <path d="M 0,394 C 90,345 130,328 170,328 C 250,328 290,365 370,372 C 470,380 610,395 690,400 C 750,405 790,442 850,439 C 890,435 930,355 970,342 L 1024,338 L 1024,575 L 0,575 Z" fill="rgba(20, 184, 166, 0.15)" />
+          <path d="M 0,394 C 90,345 130,328 170,328 C 250,328 290,365 370,372 C 470,380 610,395 690,400 C 750,405 790,442 850,439 C 890,435 930,355 970,342 L 1024,338" fill="none" stroke="rgba(255, 255, 255, 0.7)" stroke-width="3.5" stroke-linecap="round" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Water Caustic Shimmer -->
+    <div class="absolute bottom-0 inset-x-0 h-[45%] bg-gradient-to-t from-cyan-500/18 via-teal-400/10 to-transparent pointer-events-none animate-water-glimmer"></div>
+
+    <!-- Layer 3: Floating Stickers with Parallax -->
+    <div id="floatBoatLeft" class="absolute top-28 left-[6%] w-16 h-12 pointer-events-none animate-float-slow hidden md:block transition-transform duration-300 ease-out">
+      <img src="/stickers/saba-boat.png" alt="Origami Boat" class="w-full h-full object-contain drop-shadow-lg opacity-85" />
+    </div>
+    <div id="floatFishLeft" class="absolute bottom-28 left-[10%] w-14 h-10 pointer-events-none animate-float-slow hidden md:block transition-transform duration-300 ease-out" style="animation-delay: 2s;">
+      <img src="/stickers/saba-fish.png" alt="Blue Fish" class="w-full h-full object-contain drop-shadow-lg opacity-85" />
+    </div>
+    <div id="floatBoatRight" class="absolute top-36 right-[8%] w-16 h-12 pointer-events-none animate-float-slow hidden md:block transition-transform duration-300 ease-out" style="animation-delay: 1.5s;">
+      <img src="/stickers/saba-boat.png" alt="Origami Boat" class="w-full h-full object-contain drop-shadow-lg opacity-80" />
+    </div>
+    <div id="floatCrabRight" class="absolute bottom-24 right-[12%] w-16 h-11 pointer-events-none animate-crab-scuttle hidden md:block transition-transform duration-300 ease-out">
+      <img src="/stickers/saba-crab.png" alt="Kaniki Crab" class="w-full h-full object-contain drop-shadow-lg opacity-90" />
+    </div>
+
+    <!-- Rising Ocean Bubbles -->
+    <div id="oceanBubblesContainer"></div>
+  </div>
+
+
+  <!-- =========================================
+       MAIN LOGIN STAGE
+       ========================================= -->
+  <main id="mainStage" class="relative z-20 w-full max-w-md mx-auto p-6 flex flex-col items-center justify-center my-auto transition-transform duration-300 ease-out h-full min-h-screen">
+<!-- Login Card -->
   <div class="relative z-10 w-full max-w-md bg-slate-900/80 backdrop-blur-2xl border border-slate-800 p-8 sm:p-10 rounded-3xl shadow-2xl shadow-cyan-950/40">
     
     <!-- Header / Brand -->
@@ -131,8 +328,206 @@
     </div>
 
   </div>
+  </main>
+
+  <!-- Background Music Element -->
+  <audio id="bgmAudio" autoplay loop src="/saba-saba.mp3"></audio>
+
+  <!-- BGM Toggle Button -->
+  <button 
+    id="bgmToggle" 
+    onclick="toggleBGM(event)"
+    class="fixed bottom-6 right-6 z-50 bg-slate-900/80 backdrop-blur-md border border-cyan-500/40 text-cyan-400 p-3 rounded-full shadow-lg shadow-cyan-900/50 hover:bg-cyan-950 hover:text-cyan-300 transition-all flex items-center justify-center cursor-pointer"
+    title="Toggle Background Music"
+  >
+    <span id="bgmIcon" class="material-symbols-outlined text-xl">music_off</span>
+  </button>
 
   <script>
+    // =========================================
+    // CUSTOM SABA NAUTICAL CURSOR & PARALLAX LERP
+    // =========================================
+    const isFinePointer = window.matchMedia("(pointer: fine)").matches;
+    if (isFinePointer) {
+      document.body.classList.add("saba-cursor-active");
+
+      const cursor = document.getElementById("sabaCursor");
+      const cursorBody = document.getElementById("cursorBody");
+      const cursorSparkle = document.getElementById("cursorSparkle");
+      const trailContainer = document.getElementById("cursorTrailContainer");
+      const rippleContainer = document.getElementById("rippleContainer");
+
+      // Parallax layers
+      const bgCanvas = document.getElementById("bgCanvas");
+      const waveLayer = document.getElementById("waveLayer");
+      const mainStage = document.getElementById("mainStage");
+      const floatBoatLeft = document.getElementById("floatBoatLeft");
+      const floatFishLeft = document.getElementById("floatFishLeft");
+      const floatBoatRight = document.getElementById("floatBoatRight");
+      const floatCrabRight = document.getElementById("floatCrabRight");
+
+      let mouseX = -200, mouseY = -200;
+      let targetPx = 0, targetPy = 0;
+      let currPx = 0, currPy = 0;
+      let lastTrail = 0;
+
+      window.addEventListener("mousemove", (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        if(cursor) {
+          cursor.style.left = `${mouseX}px`;
+          cursor.style.top = `${mouseY}px`;
+          cursor.style.opacity = "1";
+        }
+
+        targetPx = (e.clientX / window.innerWidth - 0.5) * 2;
+        targetPy = (e.clientY / window.innerHeight - 0.5) * 2;
+
+        // Hover effect detection
+        const target = e.target;
+        const isHover = target && target.closest("a, button, [onclick], input, .group");
+        if (isHover && cursorBody && cursorSparkle) {
+          cursorBody.style.transform = "scale(1.35) rotate(12deg)";
+          cursorSparkle.classList.remove("hidden");
+        } else if(cursorBody && cursorSparkle) {
+          cursorBody.style.transform = "scale(1) rotate(0deg)";
+          cursorSparkle.classList.add("hidden");
+        }
+
+        // Water bubble trail
+        const now = performance.now();
+        if (now - lastTrail > 55 && trailContainer) {
+          lastTrail = now;
+          const bubble = document.createElement("div");
+          const size = Math.random() * 8 + 5;
+          bubble.className = "fixed pointer-events-none rounded-full bg-cyan-200/40 border border-cyan-100/60 z-[9998] transition-all duration-500 ease-out";
+          bubble.style.left = `${e.clientX + (Math.random() * 10 - 5)}px`;
+          bubble.style.top = `${e.clientY + 10 + (Math.random() * 8 - 4)}px`;
+          bubble.style.width = `${size}px`;
+          bubble.style.height = `${size}px`;
+          bubble.style.transform = "translate(-50%, -50%) scale(0.7)";
+          bubble.style.opacity = "0.65";
+          bubble.style.boxShadow = "0 0 6px rgba(56, 189, 248, 0.4)";
+          trailContainer.appendChild(bubble);
+
+          requestAnimationFrame(() => {
+            bubble.style.transform = "translate(-50%, -80%) scale(1.2)";
+            bubble.style.opacity = "0";
+          });
+          setTimeout(() => bubble.remove(), 550);
+        }
+      });
+
+      window.addEventListener("mousedown", (e) => {
+        if(cursorBody) cursorBody.style.transform = "scale(0.85) rotate(-8deg)";
+
+        // Water Click Ripple
+        if(rippleContainer) {
+          const ripple = document.createElement("div");
+          ripple.className = "fixed pointer-events-none rounded-full border-2 border-cyan-300/80 z-[9998] transition-all duration-700 ease-out";
+          ripple.style.left = `${e.clientX}px`;
+          ripple.style.top = `${e.clientY}px`;
+          ripple.style.width = "10px";
+          ripple.style.height = "10px";
+          ripple.style.marginLeft = "-5px";
+          ripple.style.marginTop = "-5px";
+          ripple.style.opacity = "0.9";
+          ripple.style.boxShadow = "0 0 20px rgba(56, 189, 248, 0.7)";
+          rippleContainer.appendChild(ripple);
+
+          requestAnimationFrame(() => {
+            ripple.style.width = "70px";
+            ripple.style.height = "70px";
+            ripple.style.marginLeft = "-35px";
+            ripple.style.marginTop = "-35px";
+            ripple.style.opacity = "0";
+          });
+          setTimeout(() => ripple.remove(), 700);
+        }
+      });
+
+      window.addEventListener("mouseup", () => {
+        if(cursorBody) cursorBody.style.transform = "scale(1) rotate(0deg)";
+      });
+
+      document.addEventListener("mouseleave", () => {
+        if(cursor) cursor.style.opacity = "0";
+      });
+
+      // Smooth Lerp loop for parallax
+      function animLoop() {
+        currPx += (targetPx - currPx) * 0.08;
+        currPy += (targetPy - currPy) * 0.08;
+
+        if (bgCanvas) bgCanvas.style.transform = `translate3d(${currPx * -16}px, ${currPy * -12}px, 0) scale(1.08)`;
+        if (waveLayer) waveLayer.style.transform = `translate3d(${currPx * -24}px, ${currPy * -16}px, 0)`;
+        if (mainStage) mainStage.style.transform = `translate3d(${currPx * 12}px, ${currPy * 8}px, 0)`;
+        if (floatBoatLeft) floatBoatLeft.style.transform = `translate3d(${currPx * 36}px, ${currPy * 24}px, 0)`;
+        if (floatFishLeft) floatFishLeft.style.transform = `translate3d(${currPx * -42}px, ${currPy * -26}px, 0)`;
+        if (floatBoatRight) floatBoatRight.style.transform = `translate3d(${currPx * 44}px, ${currPy * 30}px, 0)`;
+        if (floatCrabRight) floatCrabRight.style.transform = `translate3d(${currPx * -36}px, ${currPy * -20}px, 0)`;
+
+        requestAnimationFrame(animLoop);
+      }
+      animLoop();
+    }
+
+    // Generate rising ocean bubbles
+    const bubbleContainer = document.getElementById("oceanBubblesContainer");
+    if (bubbleContainer) {
+      for (let i = 0; i < 16; i++) {
+        const b = document.createElement("div");
+        const size = 10 + (i % 5) * 8;
+        const dur = 7 + (i % 6) * 3;
+        const delay = i * 0.7;
+        const left = (i * 6.5 + 3) % 96;
+        b.className = "absolute rounded-full bg-cyan-200/30 border border-cyan-100/50 pointer-events-none backdrop-blur-xs";
+        b.style.width = `${size}px`;
+        b.style.height = `${size}px`;
+        b.style.left = `${left}%`;
+        b.style.bottom = "-40px";
+        b.style.animation = `bubbleFloatUp ${dur}s linear infinite`;
+        b.style.animationDelay = `${delay}s`;
+        bubbleContainer.appendChild(b);
+      }
+    }
+
+    // Audio Player Logic
+    const bgm = document.getElementById('bgmAudio');
+    const bgmToggle = document.getElementById('bgmToggle');
+    const bgmIcon = document.getElementById('bgmIcon');
+    let isPlaying = false;
+
+    if (bgm) {
+      bgm.addEventListener('play', () => {
+        isPlaying = true;
+        if(bgmIcon) bgmIcon.innerText = 'music_note';
+      });
+      
+      bgm.addEventListener('pause', () => {
+        isPlaying = false;
+        if(bgmIcon) bgmIcon.innerText = 'music_off';
+      });
+    }
+
+    function toggleBGM(e) {
+      if(e) e.stopPropagation();
+      if (!bgm) return;
+      if (isPlaying) {
+        bgm.pause();
+      } else {
+        bgm.play().catch(e => console.log('Audio play failed:', e));
+      }
+    }
+
+    document.body.addEventListener('click', function playOnInteract() {
+      if (!isPlaying && bgm) {
+        bgm.play().catch(e => console.log('Autoplay on interact failed:', e));
+      }
+      document.body.removeEventListener('click', playOnInteract);
+    }, { once: true });
+    
+    // Original Login Logic
     function togglePasswordVisibility() {
       const pwdInput = document.getElementById('passwordInput');
       const pwdIcon = document.getElementById('pwdIcon');
@@ -186,6 +581,7 @@
         btnText.innerText = 'Masuk ke Control Panel';
       }
     }
+  
   </script>
 </body>
 </html>
