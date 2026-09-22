@@ -69,7 +69,7 @@ app.use((req, res, next) => {
   next();
 });
 `;
-code = code.replace(globalMiddles, newGlobalMiddles);
+code = code.replace(globalMiddles, () => newGlobalMiddles);
 
 // 3. Login Route & Rate Limiting
 const loginRateLimit = `
@@ -94,7 +94,7 @@ const newLoginLogic = `  // Hash plaintext password if not hashed yet
   const isMatch = bcrypt.compareSync(password, authConfig.password);
   if (username === authConfig.username && isMatch) {
     const sessionToken = crypto.randomBytes(32).toString('hex');`;
-code = code.replace(oldLoginLogic, newLoginLogic);
+code = code.replace(oldLoginLogic, () => newLoginLogic);
 
 // Cookies HttpOnly Secure SameSite
 const oldCookie = `    res.cookie('shilycia_session', sessionToken, {
@@ -108,7 +108,7 @@ const newCookie = `    res.cookie('shilycia_session', sessionToken, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: 'strict'
     });`;
-code = code.replace(oldCookie, newCookie);
+code = code.replace(oldCookie, () => newCookie);
 
 // Change password hashing
 const oldChangePwd = `  if (currentPassword !== authConfig.password) {
@@ -125,7 +125,7 @@ const newChangePwd = `  const isMatch = bcrypt.compareSync(currentPassword, auth
 
   if (newUsername && newUsername.trim()) authConfig.username = newUsername.trim();
   if (newPassword && newPassword.length >= 6) authConfig.password = bcrypt.hashSync(newPassword, 10);`;
-code = code.replace(oldChangePwd, newChangePwd);
+code = code.replace(oldChangePwd, () => newChangePwd);
 
 // 4. Update execFile in /api/commands/run
 const oldExec = `  const child = spawn(command, [], {
@@ -158,7 +158,7 @@ const newExec = `  // Project whitelist check
   child.on('error', (err) => {
     broadcastCommandLog({ type: 'stderr', text: 'Error executing file: ' + err.message });
   });`;
-code = code.replace(oldExec, newExec);
+code = code.replace(oldExec, () => newExec);
 
 // 5. App listen localhost
 code = code.replace("app.listen(PORT, () => {", "app.listen(PORT, '127.0.0.1', () => {");

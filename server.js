@@ -19,10 +19,10 @@ const PORT = process.env.PORT || 8080;
 // CONFIG PATHS
 // ==========================================
 const CONFIG_DIR = path.join(__dirname, 'config');
-const STATUS_PATH = path.join(CONFIG_DIR, 'status.json');
 const AUTH_PATH = path.join(CONFIG_DIR, 'auth.json');
 const PROJECTS_PATH = path.join(CONFIG_DIR, 'projects.json');
 const COMMANDS_PATH = path.join(CONFIG_DIR, 'commands.json');
+const SESSIONS_PATH = path.join(CONFIG_DIR, 'sessions.json');
 
 const WORKSPACE_DIR = process.env.WORKSPACE_DIR || (
   fs.existsSync(path.resolve(__dirname, '..', 'prototype_porto'))
@@ -31,7 +31,8 @@ const WORKSPACE_DIR = process.env.WORKSPACE_DIR || (
 );
 
 // In-Memory Active Sessions & Real-time Command SSE streams
-const activeSessions = new Set();
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const activeSessions = new Map();
 let activeCommandProcess = null;
 const commandSseClients = new Set();
 
@@ -60,8 +61,59 @@ function writeJsonFile(filePath, data) {
   }
 }
 
+function loadSessions() {
+  const stored = readJsonFile(SESSIONS_PATH, {});
+  const now = Date.now();
+  return new Map(Object.entries(stored).filter(([, expiresAt]) => Number(expiresAt) > now));
+}
+
+function persistSessions() {
+  writeJsonFile(SESSIONS_PATH, Object.fromEntries(activeSessions));
+}
+
+function hasActiveSession(token) {
+  if (!token) return false;
+  const expiresAt = activeSessions.get(token);
+  if (Number(expiresAt) > Date.now()) return true;
+  if (expiresAt) {
+    activeSessions.delete(token);
+    persistSessions();
+  }
+  return false;
+}
+
+function getAuthConfig() {
+  const authConfig = readJsonFile(AUTH_PATH, null);
+  if (!authConfig || typeof authConfig.username !== 'string' || typeof authConfig.password !== 'string' || !/^\$2[aby]\$/.test(authConfig.password)) {
+    return null;
+  }
+  return authConfig;
+}
+
 // Valid deploy statuses
 const VALID_STATUSES = ['production', 'maintenance', 'build'];
+
+function isValidPort(value) {
+  const port = Number(value);
+  return Number.isInteger(port) && port >= 1 && port <= 65535;
+}
+
+function isPathInside(parentPath, candidatePath) {
+  const relative = path.relative(path.resolve(parentPath), path.resolve(candidatePath));
+  return relative === '' || (!relative.startsWith(`..${path.sep}`) && relative !== '..' && !path.isAbsolute(relative));
+}
+
+function isAllowedRequestOrigin(value) {
+  if (!value) return false;
+  try {
+    return allowedOrigins.includes(new URL(value).origin);
+  } catch {
+    return false;
+  }
+}
+
+for (const [token, expiresAt] of loadSessions()) activeSessions.set(token, expiresAt);
+persistSessions();
 
 // Proxy cache: port → proxy middleware
 const proxyCache = {};
@@ -97,7 +149,10 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Do not turn an untrusted Origin header into a server error.  The
+      // browser receives no CORS permission and write requests are rejected
+      // by the CSRF middleware below.
+      callback(null, false);
     }
   },
   credentials: true
@@ -117,7 +172,7 @@ function csrfProtection(req, res, next) {
       if (req.path === '/api/auth/login') return next();
       return res.status(403).json({error: 'CSRF validation failed: No origin/referer'});
     }
-    const validOrigin = allowedOrigins.some(o => (origin && origin.startsWith(o)) || (referer && referer.startsWith(o)));
+    const validOrigin = isAllowedRequestOrigin(origin) || isAllowedRequestOrigin(referer);
     if (!validOrigin) return res.status(403).json({error: 'CSRF validation failed: Invalid origin/referer'});
   }
   next();
@@ -128,11 +183,14 @@ const AUDIT_LOG_PATH = path.join(CONFIG_DIR, 'audit.log');
 function logAudit(user, action, details, ip) {
   const timestamp = new Date().toISOString();
   const logLine = `[${timestamp}] USER:${user} IP:${ip} ACTION:${action} DETAILS:${details}\n`;
-  fs.appendFileSync(AUDIT_LOG_PATH, logLine);
+  fs.appendFile(AUDIT_LOG_PATH, logLine, (err) => {
+    if (err) console.error('[AUDIT] Error writing audit log:', err.message);
+  });
 }
 app.use((req, res, next) => {
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-    const user = (req.cookies && req.cookies.shilycia_session) ? 'admin' : 'guest';
+    const token = req.cookies && req.cookies.shilycia_session;
+    const user = hasActiveSession(token) ? 'admin' : 'guest';
     logAudit(user, req.method, req.originalUrl, req.ip);
   }
   next();
@@ -143,7 +201,7 @@ app.use((req, res, next) => {
 // ==========================================
 function requireAuth(req, res, next) {
   const token = req.cookies.shilycia_session || req.headers.authorization?.replace('Bearer ', '');
-  if (token && activeSessions.has(token)) {
+  if (hasActiveSession(token)) {
     return next();
   }
   if (req.path.startsWith('/api/')) {
@@ -155,7 +213,7 @@ function requireAuth(req, res, next) {
 // Login Page
 app.get('/login', (req, res) => {
   const token = req.cookies.shilycia_session;
-  if (token && activeSessions.has(token)) return res.redirect('/admin');
+  if (hasActiveSession(token)) return res.redirect('/admin');
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
@@ -167,21 +225,19 @@ const loginLimiter = rateLimit({
 });
 app.post('/api/auth/login', loginLimiter, (req, res) => {
   const { username, password } = req.body;
-  const authConfig = readJsonFile(AUTH_PATH, { username: 'admin', password: 'shilyciaDEV2026!' });
-
-  if (!authConfig.password.startsWith('$2b$')) {
-    authConfig.password = bcrypt.hashSync(authConfig.password, 10);
-    writeJsonFile(AUTH_PATH, authConfig);
-  }
+  const authConfig = getAuthConfig();
+  if (!authConfig) return res.status(503).json({ success: false, error: 'Konfigurasi autentikasi tidak valid.' });
   const isMatch = bcrypt.compareSync(password, authConfig.password);
   if (username === authConfig.username && isMatch) {
     const sessionToken = crypto.randomBytes(32).toString('hex');
-    activeSessions.add(sessionToken);
+    const expiresAt = Date.now() + SESSION_TTL_MS;
+    activeSessions.set(sessionToken, expiresAt);
+    persistSessions();
 
     res.cookie('shilycia_session', sessionToken, {
       httpOnly: true,
-      secure: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: req.secure,
+      maxAge: SESSION_TTL_MS,
       sameSite: 'strict'
     });
 
@@ -194,7 +250,10 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
 // POST /api/auth/logout
 app.post('/api/auth/logout', (req, res) => {
   const token = req.cookies.shilycia_session;
-  if (token) activeSessions.delete(token);
+  if (token) {
+    activeSessions.delete(token);
+    persistSessions();
+  }
   res.clearCookie('shilycia_session');
   res.json({ success: true, message: 'Logout berhasil' });
 });
@@ -202,14 +261,15 @@ app.post('/api/auth/logout', (req, res) => {
 // GET /api/auth/check
 app.get('/api/auth/check', (req, res) => {
   const token = req.cookies.shilycia_session;
-  const isLoggedIn = !!(token && activeSessions.has(token));
+  const isLoggedIn = hasActiveSession(token);
   res.json({ isLoggedIn });
 });
 
 // POST /api/auth/change-password
 app.post('/api/auth/change-password', requireAuth, (req, res) => {
   const { currentPassword, newUsername, newPassword } = req.body;
-  const authConfig = readJsonFile(AUTH_PATH, { username: 'admin', password: 'shilyciaDEV2026!' });
+  const authConfig = getAuthConfig();
+  if (!authConfig) return res.status(503).json({ error: 'Konfigurasi autentikasi tidak valid.' });
 
   const isMatch = bcrypt.compareSync(currentPassword, authConfig.password);
   if (!isMatch) {
@@ -225,6 +285,11 @@ app.post('/api/auth/change-password', requireAuth, (req, res) => {
 // ==========================================
 // STATIC ASSETS & PUBLIC PREVIEWS
 // ==========================================
+// Keep the panel document behind authentication even though the rest of public/
+// intentionally contains public maintenance/build assets.
+app.get('/admin.html', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // Admin Control Panel (Protected)
@@ -248,7 +313,7 @@ function pingPort(port, host = '127.0.0.1') {
   return new Promise((resolve) => {
     const start = Date.now();
     const client = http.get({ hostname: host, port, path: '/', timeout: 1500 }, (r) => {
-      resolve({ online: true, statusCode: r.statusCode, latencyMs: Date.now() - start });
+      resolve({ online: r.statusCode >= 200 && r.statusCode < 400, statusCode: r.statusCode, latencyMs: Date.now() - start });
     });
     client.on('error', () => resolve({ online: false, latencyMs: 0 }));
     client.on('timeout', () => { client.destroy(); resolve({ online: false, latencyMs: 1500 }); });
@@ -314,12 +379,16 @@ app.post('/api/projects', requireAuth, (req, res) => {
   const projects = readJsonFile(PROJECTS_PATH, []);
   const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 1000);
 
+  if (port !== undefined && port !== null && port !== '' && !isValidPort(port)) {
+    return res.status(400).json({ error: 'Port harus berupa angka antara 1 dan 65535.' });
+  }
+
   const newProject = {
     id,
     name,
     type: type || 'Custom Project',
     dir,
-    port: port ? parseInt(port) : null,
+    port: port === undefined || port === null || port === '' ? null : Number(port),
     pm2Name: id,
     buildCommand: buildCommand || 'npm run build',
     startCommand: startCommand || 'npm start',
@@ -342,10 +411,21 @@ app.put('/api/projects/:id', requireAuth, (req, res) => {
 
   if (idx === -1) return res.status(404).json({ error: 'Proyek tidak ditemukan.' });
 
-  // Preserve id and validate deployStatus if provided
-  const update = { ...req.body, id };
-  if (update.deployStatus && !VALID_STATUSES.includes(update.deployStatus)) {
-    delete update.deployStatus;
+  const editableFields = ['name', 'type', 'dir', 'port', 'pm2Name', 'buildCommand', 'startCommand', 'description', 'deployStatus', 'domain'];
+  const update = { id };
+  for (const field of editableFields) {
+    if (Object.prototype.hasOwnProperty.call(req.body, field)) update[field] = req.body[field];
+  }
+  if (update.deployStatus !== undefined && !VALID_STATUSES.includes(update.deployStatus)) {
+    return res.status(400).json({ error: 'Status proyek tidak valid.' });
+  }
+  if (update.port !== undefined && update.port !== null && update.port !== '' && !isValidPort(update.port)) {
+    return res.status(400).json({ error: 'Port harus berupa angka antara 1 dan 65535.' });
+  }
+  if (update.port === '' || update.port === null) {
+    update.port = null;
+  } else if (update.port !== undefined) {
+    update.port = Number(update.port);
   }
 
   projects[idx] = { ...projects[idx], ...update };
@@ -357,7 +437,9 @@ app.put('/api/projects/:id', requireAuth, (req, res) => {
 app.delete('/api/projects/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   let projects = readJsonFile(PROJECTS_PATH, []);
-  projects = projects.filter(p => p.id !== id);
+  const nextProjects = projects.filter(p => p.id !== id);
+  if (nextProjects.length === projects.length) return res.status(404).json({ error: 'Proyek tidak ditemukan.' });
+  projects = nextProjects;
   writeJsonFile(PROJECTS_PATH, projects);
   res.json({ success: true, message: 'Proyek berhasil dihapus dari daftar.' });
 });
@@ -442,7 +524,7 @@ app.get('/api/vps/resources', requireAuth, (req, res) => {
   exec('df -m / 2>/dev/null || wmic logicaldisk get size,freespace,caption', (err, stdout) => {
     let diskStats = { totalMB: 50000, usedMB: 22000, freeMB: 28000, usedPercent: 44 };
 
-    if (stdout && stdout.includes('/')) {
+    if (stdout && process.platform !== 'win32') {
       const lines = stdout.trim().split('\n');
       if (lines.length > 1) {
         const parts = lines[1].replace(/\s+/g, ' ').split(' ');
@@ -450,6 +532,19 @@ app.get('/api/vps/resources', requireAuth, (req, res) => {
         const used = parseInt(parts[2]) || 22000;
         const free = parseInt(parts[3]) || 28000;
         diskStats = { totalMB: total, usedMB: used, freeMB: free, usedPercent: Math.round((used / total) * 100) };
+      }
+    } else if (stdout) {
+      // WMIC reports bytes, with a drive row such as: C:  123456  987654.
+      const driveLine = stdout.split(/\r?\n/).find(line => /^\s*[A-Za-z]:\s+\d+\s+\d+\s*$/.test(line));
+      if (driveLine) {
+        const values = driveLine.match(/\d+/g).map(Number);
+        const [freeBytes, totalBytes] = values;
+        const total = Math.round(totalBytes / (1024 * 1024));
+        const free = Math.round(freeBytes / (1024 * 1024));
+        if (total > 0) {
+          const used = Math.max(0, total - free);
+          diskStats = { totalMB: total, usedMB: used, freeMB: free, usedPercent: Math.round((used / total) * 100) };
+        }
       }
     }
 
@@ -540,7 +635,9 @@ app.post('/api/commands/save', requireAuth, (req, res) => {
 app.delete('/api/commands/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   let commands = readJsonFile(COMMANDS_PATH, []);
-  commands = commands.filter(c => c.id !== id);
+  const nextCommands = commands.filter(c => c.id !== id);
+  if (nextCommands.length === commands.length) return res.status(404).json({ error: 'Perintah tidak ditemukan.' });
+  commands = nextCommands;
   writeJsonFile(COMMANDS_PATH, commands);
   res.json({ success: true, message: 'Perintah berhasil dihapus dari perpustakaan.' });
 });
@@ -566,7 +663,13 @@ app.post('/api/commands/run', requireAuth, (req, res) => {
     return res.status(409).json({ error: 'Sebuah perintah lain masih berjalan di terminal.' });
   }
 
-  const execCwd = customCwd && fs.existsSync(customCwd) ? customCwd : WORKSPACE_DIR;
+  const requestedCwd = customCwd
+    ? (path.isAbsolute(customCwd) ? path.resolve(customCwd) : path.resolve(WORKSPACE_DIR, customCwd))
+    : path.resolve(WORKSPACE_DIR);
+  if (!fs.existsSync(requestedCwd)) {
+    return res.status(400).json({ error: 'Direktori kerja tidak ditemukan.' });
+  }
+  const execCwd = requestedCwd;
   const startTime = Date.now();
 
   broadcastCommandLog({ type: 'start', command, cwd: execCwd, timestamp: new Date().toLocaleTimeString() });
@@ -577,10 +680,13 @@ app.post('/api/commands/run', requireAuth, (req, res) => {
   allowedDirs.push(path.resolve(__dirname));
   
   const resolvedCwd = path.resolve(execCwd);
-  if (!allowedDirs.some(dir => resolvedCwd.startsWith(dir))) {
+  if (!allowedDirs.some(dir => isPathInside(dir, resolvedCwd))) {
     return res.status(403).json({ error: 'Direktori kerja tidak diizinkan.' });
   }
 
+  if (/[|;&><`$]/.test(command)) {
+    return res.status(400).json({ error: 'Operator shell tidak didukung. Jalankan satu executable dengan argumen.' });
+  }
   const args = command.match(/(?:[^\s"]+|"[^"]*")+/g).map(s => s.replace(/^"|"$/g, ''));
   const executable = args.shift();
 
@@ -674,11 +780,11 @@ app.get('/api/logs/view', requireAuth, (req, res) => {
     return res.status(404).json({ error: 'File log tidak ditemukan' });
   }
 
-  execFile('tail', ['-n', parseInt(lines) || 100, logPath], (error, stdout, stderr) => {
-    if (error) {
-      return res.status(500).json({ error: 'Gagal membaca log', details: stderr });
-    }
-    res.send(stdout);
+  const lineCount = Math.min(Math.max(parseInt(lines, 10) || 100, 1), 1000);
+  fs.readFile(logPath, 'utf8', (error, content) => {
+    if (error) return res.status(500).json({ error: 'Gagal membaca log.' });
+    const output = content.split(/\r?\n/).slice(-lineCount).join('\n');
+    res.type('text/plain').send(output);
   });
 });
 
@@ -700,9 +806,10 @@ app.use((req, res, next) => {
   const panelRoutes = ['/admin', '/login', '/api/projects', '/api/vps', '/api/auth', '/api/terminal', '/preview/', '/stickers/', '/favicon', '/saba-'];
   if (panelRoutes.some(r => req.path.startsWith(r))) return next();
 
-  // Admin bypass
-  const isBypass = req.query.bypass === 'admin';
-  if (isBypass) return next();
+  // Admin bypass keeps routing to the selected app but ignores its temporary page.
+  // It is only useful to an already-authenticated browser, so require that here.
+  const bypassToken = req.cookies.shilycia_session;
+  const isBypass = req.query.bypass === 'admin' && hasActiveSession(bypassToken);
 
   const projects = readJsonFile(PROJECTS_PATH, []);
 
@@ -736,7 +843,7 @@ app.use((req, res, next) => {
     `);
   }
 
-  const deployStatus = targetProject.deployStatus || 'production';
+  const deployStatus = isBypass ? 'production' : (targetProject.deployStatus || 'production');
 
   if (deployStatus === 'maintenance') {
     console.log(`[GATEWAY] [${host}] → Project "${targetProject.name}" → MAINTENANCE`);
@@ -754,7 +861,9 @@ app.use((req, res, next) => {
     console.log(`[GATEWAY] [${host}] → Project "${targetProject.name}" → STATIC (${pPath})`);
     return getOrCreateStatic(pPath)(req, res, () => {
       // If static file not found, fallback to index.html (SPA)
-      res.sendFile(path.join(pPath, 'index.html'));
+      res.sendFile(path.join(pPath, 'index.html'), (err) => {
+        if (err && !res.headersSent) res.status(404).sendFile(path.join(__dirname, 'public', 'maintenance.html'));
+      });
     });
   }
 

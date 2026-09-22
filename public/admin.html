@@ -11,11 +11,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" rel="stylesheet" />
 
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     // ==========================================
     // PM2 & LOGS LOGIC (Phase 7)
     // ==========================================
     let currentLogPath = '';
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+    }
+
+    function escapeJsSingle(value) {
+      return String(value ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/[\r\n]/g, ' ').replace(/</g, '\\x3C');
+    }
     
     async function loadPM2Data() {
       const container = document.getElementById('pm2Container');
@@ -41,12 +50,12 @@
             <div class="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800 p-5 shadow-xl flex flex-col justify-between">
               <div class="flex items-start justify-between mb-4">
                 <div>
-                  <h3 class="text-lg font-bold text-white font-mono">${proc.name}</h3>
-                  <div class="text-xs text-slate-400 font-mono mt-1">PID: ${proc.pid || '-'} | ID: ${proc.id}</div>
+                  <h3 class="text-lg font-bold text-white font-mono">${escapeHtml(proc.name)}</h3>
+                  <div class="text-xs text-slate-400 font-mono mt-1">PID: ${escapeHtml(proc.pid || '-')} | ID: ${escapeHtml(proc.id)}</div>
                 </div>
                 <span class="px-2.5 py-1 rounded-full text-[10px] uppercase font-mono font-bold bg-${statusColor}-950 text-${statusColor}-400 border border-${statusColor}-500/40 flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full bg-${statusColor}-400 ${statusPulse}"></span>
-                  ${proc.status}
+                  ${escapeHtml(proc.status)}
                 </span>
               </div>
               
@@ -70,23 +79,23 @@
               </div>
 
               <div class="flex flex-wrap gap-2 font-mono text-[11px]">
-                <button onclick="actionPM2('restart', '${proc.id}')" class="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex justify-center items-center gap-1 transition">
+                <button onclick="actionPM2('restart', '${escapeJsSingle(proc.id)}')" class="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex justify-center items-center gap-1 transition">
                   <span class="material-symbols-outlined text-sm">restart_alt</span> Restart
                 </button>
                 ${isOnline ? 
-                  `<button onclick="actionPM2('stop', '${proc.id}')" class="flex-1 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-900 flex justify-center items-center gap-1 transition">
+                  `<button onclick="actionPM2('stop', '${escapeJsSingle(proc.id)}')" class="flex-1 py-2 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-900 flex justify-center items-center gap-1 transition">
                     <span class="material-symbols-outlined text-sm">stop_circle</span> Stop
                   </button>` : 
-                  `<button onclick="actionPM2('start', '${proc.id}')" class="flex-1 py-2 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-900 flex justify-center items-center gap-1 transition">
+                  `<button onclick="actionPM2('start', '${escapeJsSingle(proc.id)}')" class="flex-1 py-2 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-900 flex justify-center items-center gap-1 transition">
                     <span class="material-symbols-outlined text-sm">play_arrow</span> Start
                   </button>`
                 }
               </div>
               <div class="flex gap-2 mt-2 font-mono text-[11px]">
-                <button onclick="openLogViewer('${proc.logOut}', '${proc.name} (Output)')" class="flex-1 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-cyan-400 border border-slate-800 flex justify-center items-center gap-1 transition">
+                <button onclick="openLogViewer('${escapeJsSingle(proc.logOut)}', '${escapeJsSingle(proc.name)} (Output)')" class="flex-1 py-2 rounded-lg bg-slate-950 hover:bg-slate-800 text-cyan-400 border border-slate-800 flex justify-center items-center gap-1 transition">
                   <span class="material-symbols-outlined text-sm">receipt_long</span> Log Output
                 </button>
-                <button onclick="openLogViewer('${proc.logErr}', '${proc.name} (Error)')" class="flex-1 py-2 rounded-lg bg-slate-950 hover:bg-rose-950 text-rose-400 border border-slate-800 flex justify-center items-center gap-1 transition">
+                <button onclick="openLogViewer('${escapeJsSingle(proc.logErr)}', '${escapeJsSingle(proc.name)} (Error)')" class="flex-1 py-2 rounded-lg bg-slate-950 hover:bg-rose-950 text-rose-400 border border-slate-800 flex justify-center items-center gap-1 transition">
                   <span class="material-symbols-outlined text-sm">error</span> Log Error
                 </button>
               </div>
@@ -996,8 +1005,8 @@
             grid.innerHTML += `
               <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
                 <div>
-                  <div class="text-slate-400 text-[11px]">${p.type}</div>
-                  <div class="font-bold text-slate-200 mt-0.5">${p.name}${p.isDefault ? ' <span class="text-[10px] text-cyan-400 font-mono ml-1">★</span>' : ''}</div>
+                  <div class="text-slate-400 text-[11px]">${escapeHtml(p.type)}</div>
+                  <div class="font-bold text-slate-200 mt-0.5">${escapeHtml(p.name)}${p.isDefault ? ' <span class="text-[10px] text-cyan-400 font-mono ml-1">★</span>' : ''}</div>
                   <div class="text-[10px] text-slate-500 mt-1">Port: ${p.port || 'N/A'} • ${p.sizeMB} MB</div>
                 </div>
                 <div class="flex flex-col items-end gap-1.5">
@@ -1065,22 +1074,22 @@
                 <div class="flex items-start justify-between">
                   <div>
                     <div class="flex items-center gap-2">
-                      <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${p.type}</span>
+                      <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">${escapeHtml(p.type)}</span>
                       ${isDefault ? '<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40">DEFAULT</span>' : ''}
                     </div>
-                    <h3 class="text-lg font-bold text-white mt-1.5">${p.name}</h3>
+                    <h3 class="text-lg font-bold text-white mt-1.5">${escapeHtml(p.name)}</h3>
                   </div>
                   <span class="px-2 py-1 rounded text-[11px] font-mono font-bold ${isOnline ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">
                     ${isOnline ? 'ONLINE' : 'OFFLINE'}
                   </span>
                 </div>
 
-                <p class="text-xs text-slate-400 mt-2 leading-relaxed line-clamp-2">${p.description}</p>
+                <p class="text-xs text-slate-400 mt-2 leading-relaxed line-clamp-2">${escapeHtml(p.description)}</p>
                 
                 <div class="mt-4 p-3 bg-slate-950 rounded-xl border border-slate-800/80 font-mono text-[11px] text-slate-400 space-y-1">
-                  <div class="flex justify-between"><span>Direktori:</span> <strong class="text-slate-200 truncate ml-2">${p.dir}</strong></div>
+                  <div class="flex justify-between"><span>Direktori:</span> <strong class="text-slate-200 truncate ml-2">${escapeHtml(p.dir)}</strong></div>
                   <div class="flex justify-between"><span>Port HTTP:</span> <strong class="text-cyan-300">${p.port || 'Static'}</strong></div>
-                  <div class="flex justify-between"><span>Domain:</span> <strong class="text-purple-300">${p.domain || 'Semua (Default)'}</strong></div>
+                  <div class="flex justify-between"><span>Domain:</span> <strong class="text-purple-300">${escapeHtml(p.domain || 'Semua (Default)')}</strong></div>
                   <div class="flex justify-between"><span>Ukuran Ruang:</span> <strong class="text-emerald-400">${p.sizeMB} MB</strong></div>
                 </div>
               </div>
@@ -1097,19 +1106,19 @@
 
                 <!-- 3-State Status Selector -->
                 <div class="grid grid-cols-3 gap-1.5">
-                  <button onclick="setProjectStatus('${p.id}', 'production')"
+                  <button onclick="setProjectStatus('${escapeJsSingle(p.id)}', 'production')"
                     class="py-1.5 rounded-lg text-[10px] font-bold transition border cursor-pointer flex flex-col items-center gap-0.5
                       ${ds === 'production' ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-emerald-500/30 hover:text-emerald-400'}">
                     <span class="material-symbols-outlined text-sm">public</span>
                     <span>Prod</span>
                   </button>
-                  <button onclick="setProjectStatus('${p.id}', 'maintenance')"
+                  <button onclick="setProjectStatus('${escapeJsSingle(p.id)}', 'maintenance')"
                     class="py-1.5 rounded-lg text-[10px] font-bold transition border cursor-pointer flex flex-col items-center gap-0.5
                       ${ds === 'maintenance' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-amber-500/30 hover:text-amber-400'}">
                     <span class="material-symbols-outlined text-sm">beach_access</span>
                     <span>Maint</span>
                   </button>
-                  <button onclick="setProjectStatus('${p.id}', 'build')"
+                  <button onclick="setProjectStatus('${escapeJsSingle(p.id)}', 'build')"
                     class="py-1.5 rounded-lg text-[10px] font-bold transition border cursor-pointer flex flex-col items-center gap-0.5
                       ${ds === 'build' ? 'bg-blue-950 text-blue-300 border-blue-500/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:border-blue-500/30 hover:text-blue-400'}">
                     <span class="material-symbols-outlined text-sm">construction</span>
@@ -1120,14 +1129,14 @@
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-3 gap-2 pt-1">
                   <button 
-                    onclick="runProjectBuild('${p.id}')"
+                    onclick="runProjectBuild('${escapeJsSingle(p.id)}')"
                     class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold transition flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
                   >
                     <span class="material-symbols-outlined text-sm text-cyan-400">build</span>
                     <span>Build</span>
                   </button>
                   <button 
-                    onclick="setAsDefault('${p.id}')"
+                    onclick="setAsDefault('${escapeJsSingle(p.id)}')"
                     class="py-2 px-3 rounded-xl ${isDefault ? 'bg-cyan-950 border-cyan-500/40 text-cyan-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-cyan-300 hover:border-cyan-500/30'} font-bold transition flex items-center justify-center gap-1 border cursor-pointer"
                     title="Jadikan proyek ini sebagai target gateway default"
                   >
@@ -1135,7 +1144,7 @@
                     <span>${isDefault ? 'Default' : 'Set'}</span>
                   </button>
                   <button 
-                    onclick="deleteProject('${p.id}')"
+                    onclick="deleteProject('${escapeJsSingle(p.id)}')"
                     class="py-2 px-3 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 font-bold transition flex items-center justify-center gap-1 border border-slate-700 cursor-pointer"
                   >
                     <span class="material-symbols-outlined text-sm">delete</span>
@@ -1190,11 +1199,19 @@
       }
     }
 
-    function runProjectBuild(id) {
-      switchTab('commands');
-      const input = document.getElementById('terminalInput');
-      input.value = `cd ${id} && npm run build`;
-      runCustomCommand();
+    async function runProjectBuild(id) {
+      try {
+        const res = await fetch('/api/projects');
+        const projects = await res.json();
+        const project = projects.find(p => p.id === id);
+        if (!res.ok || !project) throw new Error('Proyek tidak ditemukan.');
+
+        switchTab('commands');
+        document.getElementById('terminalInput').value = project.buildCommand || 'npm run build';
+        runCustomCommand(null, project.fullPath);
+      } catch (err) {
+        alert('Gagal menyiapkan build: ' + err.message);
+      }
     }
 
     // Modal Add Project
@@ -1270,9 +1287,9 @@
             <tr class="hover:bg-slate-800/40 transition">
               <td class="py-3 font-bold text-white flex items-center gap-2">
                 <span class="material-symbols-outlined text-sm text-cyan-400">folder</span>
-                <span>${space.name}</span>
+                <span>${escapeHtml(space.name)}</span>
               </td>
-              <td class="py-3 text-slate-400 font-mono">${space.dir}</td>
+              <td class="py-3 text-slate-400 font-mono">${escapeHtml(space.dir)}</td>
               <td class="py-3 text-emerald-300 font-bold">${space.sizeMB} MB</td>
               <td class="py-3 text-right text-slate-400 font-mono">${((space.sizeBytes / (disk.totalMB * 1024 * 1024)) * 100).toFixed(2)}%</td>
             </tr>
@@ -1336,7 +1353,7 @@
       document.getElementById('terminalScreen').innerHTML = '<span class="text-slate-500">[SYSTEM] Terminal dibersihkan.</span>\n';
     }
 
-    async function runCustomCommand(e) {
+    async function runCustomCommand(e, cwd) {
       if (e) e.preventDefault();
       if (isCommandRunning) return;
       const cmd = document.getElementById('terminalInput').value.trim();
@@ -1355,11 +1372,15 @@
       }, 100);
 
       try {
-        await fetch('/api/commands/run', {
+        const res = await fetch('/api/commands/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ command: cmd })
+          body: JSON.stringify({ command: cmd, ...(cwd ? { cwd } : {}) })
         });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || `Server merespons ${res.status}`);
+        }
       } catch (err) {
         appendLog(`[ERROR] Gagal mengirim perintah: ${err.message}`, 'text-rose-400');
         isCommandRunning = false;
@@ -1381,20 +1402,20 @@
             <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500/40 transition flex flex-col justify-between space-y-3">
               <div>
                 <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-cyan-300">${c.category}</span>
-                  <button onclick="deleteCommand('${c.id}')" class="text-slate-500 hover:text-rose-400 transition">
+                  <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-cyan-300">${escapeHtml(c.category)}</span>
+                  <button onclick="deleteCommand('${escapeJsSingle(c.id)}')" class="text-slate-500 hover:text-rose-400 transition">
                     <span class="material-symbols-outlined text-sm">delete</span>
                   </button>
                 </div>
-                <h4 class="font-bold text-sm text-white mt-1.5">${c.name}</h4>
-                <p class="text-xs text-slate-400 mt-1 line-clamp-2">${c.description}</p>
+                <h4 class="font-bold text-sm text-white mt-1.5">${escapeHtml(c.name)}</h4>
+                <p class="text-xs text-slate-400 mt-1 line-clamp-2">${escapeHtml(c.description)}</p>
                 <div class="mt-2.5 p-2 bg-black/60 rounded border border-slate-800 font-mono text-[11px] text-cyan-400 truncate">
-                  ${c.command}
+                  ${escapeHtml(c.command)}
                 </div>
               </div>
 
               <button 
-                onclick="executePresetCommand('${c.id}', \`${c.command.replace(/`/g, '\\`')}\`)"
+                onclick="executePresetCommand('${escapeJsSingle(c.id)}', '${escapeJsSingle(c.command)}', '${escapeJsSingle(c.targetDir || '.')}')"
                 class="w-full py-2 rounded-lg bg-slate-800 hover:bg-cyan-600 hover:text-slate-950 text-slate-200 text-xs font-mono font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <span class="material-symbols-outlined text-sm">play_arrow</span>
@@ -1408,9 +1429,9 @@
       }
     }
 
-    function executePresetCommand(id, cmd) {
+    function executePresetCommand(id, cmd, targetDir = '.') {
       document.getElementById('terminalInput').value = cmd;
-      runCustomCommand();
+      runCustomCommand(null, targetDir);
     }
 
     async function deleteCommand(id) {

@@ -12,4 +12,5 @@ config/projects.json
 config/commands.json
 config/status.json
 config/audit.log
+config/sessions.json
 *.mp4

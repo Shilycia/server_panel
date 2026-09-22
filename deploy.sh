@@ -8,13 +8,20 @@ set -e
 # ========================================================
 # ENVIRONMENT VARIABLES & CONFIG
 # ========================================================
-DOMAIN="nadyakhiarapurnomo.my.id"
-SERVER_IP="43.173.33.116"
-BASE_DIR="/var/www"
-PANEL_DIR="${BASE_DIR}/server_panel"
-PORTO_DIR="${BASE_DIR}/prototype_porto"
-NGINX_CONF="/etc/nginx/sites-available/shilycia-gateway"
-NGINX_ENABLED="/etc/nginx/sites-enabled/shilycia-gateway"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "${SCRIPT_DIR}/.env" ]; then
+    set -a
+    . "${SCRIPT_DIR}/.env"
+    set +a
+fi
+
+DOMAIN="${DOMAIN:-nadyakhiarapurnomo.my.id}"
+SERVER_IP="${SERVER_IP:-43.173.33.116}"
+BASE_DIR="${BASE_DIR:-/var/www}"
+PANEL_DIR="${PANEL_DIR:-${BASE_DIR}/server_panel}"
+PORTO_DIR="${WORKSPACE_DIR:-${PORTO_DIR:-${BASE_DIR}/prototype_porto}}"
+NGINX_CONF="${NGINX_CONF:-/etc/nginx/sites-available/shilycia-gateway}"
+NGINX_ENABLED="${NGINX_ENABLED:-/etc/nginx/sites-enabled/shilycia-gateway}"
 
 echo "========================================================"
 echo "🚀 Memulai Deployment shilyciaDEV Gateway & Portfolio..."
